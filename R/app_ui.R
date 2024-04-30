@@ -2,8 +2,11 @@
 #'
 #' @param request Internal parameter for `{shiny}`.
 #'     DO NOT REMOVE.
-#' @import shiny
+#'
+#' @rawNamespace import(shiny, except = c(dataTableOutput, renderDataTable))
+#'
 #' @noRd
+#'
 app_ui <- function(request) {
   tagList(
     # Leave this function for adding external resources
@@ -14,10 +17,12 @@ app_ui <- function(request) {
       id = "navbar_home",
       shiny::tabPanel(
         title = "Data",
-        shiny::fluidPage(
-          shiny::p("Here the data page will be shown.")
-        )
-      ) # end Data
+          mod_data_ui("data")
+      ), # end Data
+      shiny::tabPanel(
+        title = "Visualization",
+        shiny::p("Here the different visualizations will be shown.")
+      )
     ) # end navbar
   )
 }
@@ -27,9 +32,11 @@ app_ui <- function(request) {
 #' This function is internally used to add external
 #' resources inside the Shiny application.
 #'
-#' @import shiny
+#' @rawNamespace import(shiny, except = c(dataTableOutput, renderDataTable))
 #' @importFrom golem add_resource_path activate_js favicon bundle_resources
+#'
 #' @noRd
+#'
 golem_add_external_resources <- function() {
   add_resource_path(
     "www",
