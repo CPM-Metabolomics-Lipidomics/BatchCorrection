@@ -9,9 +9,16 @@ app_ui <- function(request) {
     # Leave this function for adding external resources
     golem_add_external_resources(),
     # Your application UI logic
-    fluidPage(
-      h1("BatchCorrection")
-    )
+    shiny::navbarPage(
+      title = paste0("CPM - BatchCorrection | v", utils::packageVersion("BatchCorrection")),
+      id = "navbar_home",
+      shiny::tabPanel(
+        title = "Data",
+        shiny::fluidPage(
+          shiny::p("Here the data page will be shown.")
+        )
+      ) # end Data
+    ) # end navbar
   )
 }
 
