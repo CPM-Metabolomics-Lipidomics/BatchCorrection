@@ -17,13 +17,17 @@ app_ui <- function(request) {
       id = "navbar_home",
       shiny::tabPanel(
         title = "Data",
-          mod_data_ui("data")
-      ), # end Data
+        mod_data_ui("data")
+      ),
       shiny::tabPanel(
         title = "Visualization",
         shiny::p("Here the different visualizations will be shown.")
+      ),
+      shiny::tabPanel(
+        title = "Batch correction",
+        shiny::p("Here several batch correction results will be shown.")
       )
-    ) # end navbar
+    )
   )
 }
 

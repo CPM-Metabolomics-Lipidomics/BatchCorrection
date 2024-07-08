@@ -10,5 +10,7 @@
 app_server <- function(input, output, session) {
   # Your application server logic
 
-  mod_data_server("data")
+  r6 <- shiny::reactiveValues()
+
+  mod_data_server("data", r6 = r6)
 }

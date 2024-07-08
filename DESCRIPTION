@@ -3,7 +3,7 @@ Title: This is a Shiny app to check for possible batch effects
 Version: 0.0.0.9000
 Authors@R: 
     person("Rico", "Derks", , "r.j.e.derks@lumc.nl", role = c("cre", "aut"))
-Description: This is a Shiny app to check for possible batch effects In
+Description: This is a Shiny app to check for possible batch effects. In
     the future it will also offer the posibility to apply several batch
     correction techniques.
 License: GPL (>= 3)
@@ -13,6 +13,7 @@ Imports:
     config (>= 0.3.2),
     DT,
     golem (>= 0.4.1),
+    R6,
     readxl,
     shiny (>= 1.8.1.1),
     stringr,
@@ -24,4 +25,4 @@ Config/testthat/edition: 3
 Encoding: UTF-8
 Language: en-US
 LazyData: true
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2

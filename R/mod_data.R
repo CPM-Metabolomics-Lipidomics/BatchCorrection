@@ -12,16 +12,28 @@
 mod_data_ui <- function(id){
   ns <- shiny::NS(id)
   shiny::tagList(
-    shiny::fluidPage(
-      shiny::p("Here the data page will be shown."),
-      shiny::fileInput(
-        inputId = ns("data_file"),
-        label = "Data file:",
-        multiple = FALSE,
-        accept = c(".csv", ".tsv", ".txt", ".xlsx")),
-      DT::dataTableOutput(ns("data_preview_table"))
+    shiny::tabsetPanel(
+      id = "tabset_data",
+      shiny::tabPanel(
+        title = "Meta data",
+        shiny::fileInput(
+          inputId = ns("metadata_file"),
+          label = "Data file:",
+          multiple = FALSE,
+          accept = c(".csv", ".tsv", ".txt", ".xlsx")),
+        DT::dataTableOutput(ns("metadata_preview_table"))
+      ),
+      shiny::tabPanel(
+        title = "Data",
+        shiny::fileInput(
+          inputId = ns("rawdata_file"),
+          label = "Data file:",
+          multiple = FALSE,
+          accept = c(".csv", ".tsv", ".txt", ".xlsx")),
+        DT::dataTableOutput(ns("rawdata_preview_table"))
+      )
     )
-  )
+  ) # end tagList
 }
 
 #' data Server Functions
@@ -30,23 +42,51 @@ mod_data_ui <- function(id){
 #'
 #' @noRd
 #'
-mod_data_server <- function(id){
+mod_data_server <- function(id, r6){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    data_table <- shiny::reactive({
-      req(input$data_file)
+    shiny::observe({
+      shiny::req(session,
+          r6)
 
-      file_path <- input$data_file$datapath
-      data_table <- read_data(file_path = file_path)
-
-      return(data_table)
+      r6 <- batchCorrection$new(name = "data")
+      print("R6 object created")
     })
 
-    output$data_preview_table = DT::renderDataTable({
-      shiny::req(data_table)
+    shiny::observeEvent(input$rawdata_file, {
+      req(input$rawdata_file)
 
-      data_table <- data_table()
+      file_path <- input$rawdata_file$datapath
+      data_table <- read_data(file_path = file_path)
+
+      r6$tables$raw_data <- data_table
+      print("Raw data read into R6")
+    })
+
+    shiny::observeEvent(input$metadata_file, {
+      req(input$metadata_file)
+
+      file_path <- input$metadata_file$datapath
+      data_table <- read_data(file_path = file_path)
+
+      r6$tables$meta_data <- data_table
+      print("Meta data read into R6")
+    })
+
+    output$rawdata_preview_table = DT::renderDataTable({
+      shiny::req(r6$tables$raw_data)
+
+      data_table <- r6$tables$raw_data
+
+      DT::datatable(data = data_table,
+                    options = list(paging = TRUE))
+    })
+
+    output$metadata_preview_table = DT::renderDataTable({
+      shiny::req(r6$tables$meta_data)
+
+      data_table <- r6$tables$meta_data
 
       DT::datatable(data = data_table,
                     options = list(paging = TRUE))
