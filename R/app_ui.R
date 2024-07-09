@@ -9,21 +9,20 @@
 #'
 app_ui <- function(request) {
   tagList(
-    # Leave this function for adding external resources
     golem_add_external_resources(),
-    # Your application UI logic
-    shiny::navbarPage(
+
+    bslib::page_navbar(
       title = paste0("CPM - BatchCorrection | v", utils::packageVersion("BatchCorrection")),
-      id = "navbar_home",
-      shiny::tabPanel(
+      underline = TRUE,
+      bslib::nav_panel(
         title = "Data",
         mod_data_ui("data")
       ),
-      shiny::tabPanel(
+      bslib::nav_panel(
         title = "Visualization",
         shiny::p("Here the different visualizations will be shown.")
       ),
-      shiny::tabPanel(
+      bslib::nav_panel(
         title = "Batch correction",
         shiny::p("Here several batch correction results will be shown.")
       )

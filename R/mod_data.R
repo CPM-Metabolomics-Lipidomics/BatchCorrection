@@ -12,128 +12,81 @@
 mod_data_ui <- function(id){
   ns <- shiny::NS(id)
   shiny::tagList(
-    shiny::tabsetPanel(
-      id = "tabset_data",
-      #---------------------------------------------------------- meta data ----
-      shiny::tabPanel(
+    bslib::navset_card_tab(
+      bslib::nav_panel(
         title = "Meta data",
-        shiny::fluidPage(
-          shiny::fluidRow(
-            shiny::column(
-              width = 8,
-              shiny::fluidRow(
-                shiny::inputPanel(
-                  shiny::fileInput(
-                    inputId = ns("metadata_file"),
-                    label = "Data file:",
-                    multiple = FALSE,
-                    accept = c(".csv", ".tsv", ".txt", ".xlsx")
-                  )
-                )
+        bslib::card(
+          bslib::page_sidebar(
+            sidebar = bslib::sidebar(
+              shiny::h4("Column selection"),
+              shiny::selectInput(
+                inputId = ns("meta_select_sampleid"),
+                label = "Sample ID",
+                choices = c("sampleId")
               ),
-              shiny::fluidRow(
-                DT::dataTableOutput(
-                  outputId = ns("metadata_preview_table")
-                )
+              shiny::selectInput(
+                inputId = ns("meta_select_sampletype"),
+                label = "Sample type",
+                choices = "sampleType"
+              ),
+              shiny::selectInput(
+                inputId = ns("meta_select_batch"),
+                label = "Batch",
+                choices = "batch"
+              ),
+              shiny::h4("Text patterns"),
+              shiny::textInput(
+                inputId = ns("meta_blank_pattern"),
+                label = "Blank",
+                value = "blank",
+                width = "100%"
+              ),
+              shiny::textInput(
+                inputId = ns("meta_qc_pattern"),
+                label = "QCpool",
+                value = "qcpool",
+                width = "100%"
+              ),
+              shiny::textInput(
+                inputId = ns("meta_sample_pattern"),
+                label = "Sample",
+                value = "sample",
+                width = "100%"
               )
             ),
-            shiny::column(
-              width = 4,
-              shiny::fluidRow(
-                shiny::column(
-                  width = 12,
-                  shiny::h3("Column selection")
-                )
-              ),
-              shiny::fluidRow(
-                shiny::column(
-                  width = 6,
-                  shiny::selectInput(
-                    inputId = ns("meta_select_sampleid"),
-                    label = "Sample ID",
-                    choices = c("sampleId")
-                  ),
-                  shiny::selectInput(
-                    inputId = ns("meta_select_batch"),
-                    label = "Batch",
-                    choices = "batch"
-                  )
-                ),
-                shiny::column(
-                  width = 6,
-                  shiny::selectInput(
-                    inputId = ns("meta_select_sampletype"),
-                    label = "Sample type",
-                    choices = "sampleType"
-                  )
-                ),
-              ),
-              shiny::fluidRow(
-                shiny::column(
-                  width = 12,
-                  shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
-                  shiny::h3("Text patterns")
-                )
-              ),
-              shiny::fluidRow(
-                shiny::column(
-                  width = 4,
-                  shiny::textInput(
-                    inputId = ns("meta_blank_pattern"),
-                    label = "Blank",
-                    value = "blank",
-                    width = "100%"
-                  )
-                ),
-                shiny::column(
-                  width = 4,
-                  shiny::textInput(
-                    inputId = ns("meta_qc_pattern"),
-                    label = "QCpool",
-                    value = "qcpool",
-                    width = "100%"
-                  )
-                ),
-                shiny::column(
-                  width = 4,
-                  shiny::textInput(
-                    inputId = ns("meta_sample_pattern"),
-                    label = "Sample",
-                    value = "sample",
-                    width = "100%"
-                  )
-                )
-              )
+            shiny::fileInput(
+              inputId = ns("metadata_file"),
+              label = "Data file:",
+              multiple = FALSE,
+              accept = c(".csv", ".tsv", ".txt", ".xlsx")
+            ),
+            DT::dataTableOutput(
+              outputId = ns("metadata_preview_table")
             )
           )
         )
-      ),
-      #----------------------------------------------------------- raw data ----
-      shiny::tabPanel(
-        title = "Data",
-        shiny::fluidPage(
-          shiny::fluidRow(
-            shiny::column(
-              width = 8,
-              shiny::fluidRow(
-                shiny::fileInput(
-                  inputId = ns("rawdata_file"),
-                  label = "Data file:",
-                  multiple = FALSE,
-                  accept = c(".csv", ".tsv", ".txt", ".xlsx"))
-              ),
-              shiny::fluidRow(
-                DT::dataTableOutput(ns("rawdata_preview_table"))
-              )
+      ), # end navpanel meta data
+      bslib::nav_panel(
+        title = "Raw data",
+        bslib::card(
+          bslib::page_sidebar(
+            sidebar = bslib::sidebar(
+              title = "sidebar",
+              open = FALSE
             ),
-            shiny::column(
-              width = 4,
-              shiny::p("Some settings for raw data")
+            shiny::fileInput(
+              inputId = ns("rawdata_file"),
+              label = "Data file:",
+              multiple = FALSE,
+              accept = c(".csv", ".tsv", ".txt", ".xlsx")
+            ),
+            DT::dataTableOutput(
+              outputId = ns("rawdata_preview_table")
             )
           )
-        ) # end fluidPage
-      ) # end tabPanel
-    ) # end tabsetPanel
+        )
+      ) # end navpanel raw data
+    )
   ) # end tagList
 }
 
@@ -173,6 +126,46 @@ mod_data_server <- function(id, r6){
 
       r6$tables$meta_data <- data_table
       print("Meta data read into R6")
+
+      # update column names
+      column_names <- sort(colnames(r6$tables$meta_data))
+      shiny::updateSelectInput(
+        inputId = "meta_select_sampleid",
+        choices = column_names,
+        selected = ifelse(any(grepl(x = column_names,
+                                    pattern = ".*sampleid.*",
+                                    ignore.case = TRUE)),
+                          grep(x = column_names,
+                               pattern = ".*sampleid.*",
+                               ignore.case = TRUE,
+                               value = TRUE)[1],
+                          column_names[1])
+      )
+      shiny::updateSelectInput(
+        inputId = "meta_select_sampletype",
+        choices = column_names,
+        selected = ifelse(any(grepl(x = column_names,
+                                    pattern = ".*sampletype.*",
+                                    ignore.case = TRUE)),
+                          grep(x = column_names,
+                               pattern = ".*sampletype.*",
+                               ignore.case = TRUE,
+                               value = TRUE)[1],
+                          column_names[1])
+      )
+      shiny::updateSelectInput(
+        inputId = "meta_select_batch",
+        choices = column_names,
+        selected = ifelse(any(grepl(x = column_names,
+                                    pattern = ".*batch.*",
+                                    ignore.case = TRUE)),
+                          grep(x = column_names,
+                               pattern = ".*batch.*",
+                               ignore.case = TRUE,
+                               value = TRUE)[1],
+                          column_names[1])
+      )
+
     })
 
     output$rawdata_preview_table = DT::renderDataTable({
