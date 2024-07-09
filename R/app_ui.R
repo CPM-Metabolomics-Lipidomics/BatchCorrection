@@ -16,11 +16,11 @@ app_ui <- function(request) {
       underline = TRUE,
       bslib::nav_panel(
         title = "Data",
-        mod_data_ui("data")
+        mod_data_ui(id = "data")
       ),
       bslib::nav_panel(
         title = "Visualization",
-        shiny::p("Here the different visualizations will be shown.")
+        mod_visualization_ui(id = "viz")
       ),
       bslib::nav_panel(
         title = "Batch correction",

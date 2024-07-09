@@ -12,5 +12,9 @@ app_server <- function(input, output, session) {
 
   r6 <- shiny::reactiveValues()
 
-  mod_data_server("data", r6 = r6)
+  mod_data_server(id = "data",
+                  r6 = r6)
+
+  mod_visualization_server(id = "viz",
+                           r6 = r6)
 }

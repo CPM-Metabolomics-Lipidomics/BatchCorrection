@@ -3,6 +3,7 @@
 #' @description A shiny Module.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
+#' @param r6 r6 object with all information
 #'
 #' @noRd
 #'
@@ -110,6 +111,7 @@ mod_data_ui <- function(id){
 #' data Server Functions
 #'
 #' @importFrom DT datatable renderDataTable
+#' @importFrom ggplot2 .data
 #'
 #' @noRd
 #'
