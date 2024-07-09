@@ -119,14 +119,6 @@ mod_data_server <- function(id, r6){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    shiny::observe({
-      shiny::req(session,
-                 r6)
-
-      r6 <- batchCorrection$new(name = "data")
-      print("R6 object created")
-    })
-
     shiny::observeEvent(input$rawdata_file, {
       req(input$rawdata_file)
 
@@ -274,7 +266,7 @@ mod_data_server <- function(id, r6){
         ggplot2::geom_text(ggplot2::aes(label = .data$count),
                            vjust = -0.5,
                            hjust = 0.5,
-                           size = 4)+
+                           size = 4) +
         ggplot2::labs(x = NULL,
                       y = NULL,
                       title = "Type distribution") +

@@ -26,7 +26,8 @@ golem::add_module(name = "visualization", with_test = TRUE) # visualization modu
 
 ## Add helper functions ----
 ## Creates fct_* and utils_*
-golem::add_fct("data", with_test = TRUE)
+golem::add_fct("data", with_test = TRUE) # functions for data module
+golem::add_fct("visualization", with_test = TRUE) # functions for visualization module
 # golem::add_utils("helpers", with_test = TRUE)
 
 ## External resources

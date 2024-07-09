@@ -29,6 +29,38 @@ batchCorrection = R6::R6Class(
     tables = list(
       raw_data = NULL,
       meta_data = NULL
-    )
+    ),
+
+    #---------------------------------------------------------------- plots ----
+    plots = list(
+      trend_plot = NULL
+    ),
+
+    #------------------------------------------------------- util functions ----
+    prepare_trend_data = function(raw_data = self$tables$raw_data,
+                                  raw_id_col = self$indices$raw_id_col,
+                                  meta_data = self$tables$meta_data,
+                                  meta_id_col = self$indices$meta_id_col,
+                                  id_qcpool = self$indices$id_qcpool) {
+      print("Prepare data for trend plot")
+
+      data_wide <- raw_data[raw_data[, raw_id_col] %in% id_qcpool, ]
+      print(data_wide)
+
+      return(data_wide)
+    }
+
+
+    #------------------------------------------------------- plot functions ----
+    # trend_plot = function() {
+    #   print("Make dummy plot")
+    #   pl <- plotly::plot_ly(x = 1:10,
+    #                   y = 1:10,
+    #                   type = "scatter",
+    #                   mode = "markers")
+    #
+    #   return(pl)
+    # }
+
   )
 )

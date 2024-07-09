@@ -12,6 +12,14 @@ app_server <- function(input, output, session) {
 
   r6 <- shiny::reactiveValues()
 
+  shiny::observe({
+    shiny::req(session,
+               r6)
+
+    r6 <- batchCorrection$new(name = "data")
+    print("R6 object created")
+  })
+
   mod_data_server(id = "data",
                   r6 = r6)
 

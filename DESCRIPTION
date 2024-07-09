@@ -15,6 +15,7 @@ Imports:
     DT,
     ggplot2,
     golem (>= 0.4.1),
+    plotly,
     R6,
     readxl,
     shiny (>= 1.8.1.1),
