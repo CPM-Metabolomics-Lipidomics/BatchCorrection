@@ -6,7 +6,7 @@ batchCorrection = R6::R6Class(
     initialize = function(name) {
       self$name <- name
     },
-
+    #-------------------------------------------------------- general stuff ----
     name = NA,
     meta_file = NA,
     data_file = NA,

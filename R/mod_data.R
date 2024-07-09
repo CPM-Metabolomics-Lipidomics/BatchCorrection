@@ -14,25 +14,126 @@ mod_data_ui <- function(id){
   shiny::tagList(
     shiny::tabsetPanel(
       id = "tabset_data",
+      #---------------------------------------------------------- meta data ----
       shiny::tabPanel(
         title = "Meta data",
-        shiny::fileInput(
-          inputId = ns("metadata_file"),
-          label = "Data file:",
-          multiple = FALSE,
-          accept = c(".csv", ".tsv", ".txt", ".xlsx")),
-        DT::dataTableOutput(ns("metadata_preview_table"))
+        shiny::fluidPage(
+          shiny::fluidRow(
+            shiny::column(
+              width = 8,
+              shiny::fluidRow(
+                shiny::inputPanel(
+                  shiny::fileInput(
+                    inputId = ns("metadata_file"),
+                    label = "Data file:",
+                    multiple = FALSE,
+                    accept = c(".csv", ".tsv", ".txt", ".xlsx")
+                  )
+                )
+              ),
+              shiny::fluidRow(
+                DT::dataTableOutput(
+                  outputId = ns("metadata_preview_table")
+                )
+              )
+            ),
+            shiny::column(
+              width = 4,
+              shiny::fluidRow(
+                shiny::column(
+                  width = 12,
+                  shiny::h3("Column selection")
+                )
+              ),
+              shiny::fluidRow(
+                shiny::column(
+                  width = 6,
+                  shiny::selectInput(
+                    inputId = ns("meta_select_sampleid"),
+                    label = "Sample ID",
+                    choices = c("sampleId")
+                  ),
+                  shiny::selectInput(
+                    inputId = ns("meta_select_batch"),
+                    label = "Batch",
+                    choices = "batch"
+                  )
+                ),
+                shiny::column(
+                  width = 6,
+                  shiny::selectInput(
+                    inputId = ns("meta_select_sampletype"),
+                    label = "Sample type",
+                    choices = "sampleType"
+                  )
+                ),
+              ),
+              shiny::fluidRow(
+                shiny::column(
+                  width = 12,
+                  shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
+                  shiny::h3("Text patterns")
+                )
+              ),
+              shiny::fluidRow(
+                shiny::column(
+                  width = 4,
+                  shiny::textInput(
+                    inputId = ns("meta_blank_pattern"),
+                    label = "Blank",
+                    value = "blank",
+                    width = "100%"
+                  )
+                ),
+                shiny::column(
+                  width = 4,
+                  shiny::textInput(
+                    inputId = ns("meta_qc_pattern"),
+                    label = "QCpool",
+                    value = "qcpool",
+                    width = "100%"
+                  )
+                ),
+                shiny::column(
+                  width = 4,
+                  shiny::textInput(
+                    inputId = ns("meta_sample_pattern"),
+                    label = "Sample",
+                    value = "sample",
+                    width = "100%"
+                  )
+                )
+              )
+            )
+          )
+        )
       ),
+      #----------------------------------------------------------- raw data ----
       shiny::tabPanel(
         title = "Data",
-        shiny::fileInput(
-          inputId = ns("rawdata_file"),
-          label = "Data file:",
-          multiple = FALSE,
-          accept = c(".csv", ".tsv", ".txt", ".xlsx")),
-        DT::dataTableOutput(ns("rawdata_preview_table"))
-      )
-    )
+        shiny::fluidPage(
+          shiny::fluidRow(
+            shiny::column(
+              width = 8,
+              shiny::fluidRow(
+                shiny::fileInput(
+                  inputId = ns("rawdata_file"),
+                  label = "Data file:",
+                  multiple = FALSE,
+                  accept = c(".csv", ".tsv", ".txt", ".xlsx"))
+              ),
+              shiny::fluidRow(
+                DT::dataTableOutput(ns("rawdata_preview_table"))
+              )
+            ),
+            shiny::column(
+              width = 4,
+              shiny::p("Some settings for raw data")
+            )
+          )
+        ) # end fluidPage
+      ) # end tabPanel
+    ) # end tabsetPanel
   ) # end tagList
 }
 
@@ -48,7 +149,7 @@ mod_data_server <- function(id, r6){
 
     shiny::observe({
       shiny::req(session,
-          r6)
+                 r6)
 
       r6 <- batchCorrection$new(name = "data")
       print("R6 object created")
@@ -93,9 +194,3 @@ mod_data_server <- function(id, r6){
     })
   })
 }
-
-## To be copied in the UI
-# mod_data_ui("data_1")
-
-## To be copied in the server
-# mod_data_server("data_1")
