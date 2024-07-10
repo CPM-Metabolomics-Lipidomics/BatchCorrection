@@ -25,7 +25,7 @@ trend_plot <- function(data = NULL,
                         color = as.factor(data[, batch_col])) |>
     plotly::add_lines(
       split = data[, "featureNames"],
-      opacity = 0.2
+      opacity = 0.3
     ) |>
     plotly::layout(
       showlegend = FALSE,
