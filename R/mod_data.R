@@ -44,19 +44,19 @@ mod_data_ui <- function(id){
               shiny::textInput(
                 inputId = ns("metadata_blank_pattern"),
                 label = "Blank",
-                value = "blank",
+                value = "^blank",
                 width = "100%"
               ),
               shiny::textInput(
                 inputId = ns("metadata_qc_pattern"),
                 label = "QCpool",
-                value = "pool",
+                value = "^pool",
                 width = "100%"
               ),
               shiny::textInput(
                 inputId = ns("metadata_sample_pattern"),
                 label = "Sample",
-                value = "sample",
+                value = "^sample",
                 width = "100%"
               )
             ),
@@ -111,7 +111,7 @@ mod_data_ui <- function(id){
 #' data Server Functions
 #'
 #' @importFrom DT datatable renderDataTable
-#' @importFrom ggplot2 .data
+#' @importFrom patchwork wrap_plots
 #'
 #' @noRd
 #'
@@ -217,14 +217,14 @@ mod_data_server <- function(id, r){
           data_table <- r$tables$meta_data
 
           r$indices$id_blanks <- data_table[grepl(x = data_table[, input$metadata_select_sampletype],
-                                                   pattern = input$metadata_blank_pattern[1],
-                                                   ignore.case = TRUE), input$metadata_select_sampleid]
+                                                  pattern = input$metadata_blank_pattern[1],
+                                                  ignore.case = TRUE), input$metadata_select_sampleid]
           r$indices$id_qcpool <- data_table[grepl(x = data_table[, input$metadata_select_sampletype],
-                                                   pattern = input$metadata_qc_pattern[1],
-                                                   ignore.case = TRUE), input$metadata_select_sampleid]
+                                                  pattern = input$metadata_qc_pattern[1],
+                                                  ignore.case = TRUE), input$metadata_select_sampleid]
           r$indices$id_samples <- data_table[grepl(x = data_table[, input$metadata_select_sampletype],
-                                                    pattern = input$metadata_sample_pattern[1],
-                                                    ignore.case = TRUE), input$metadata_select_sampleid]
+                                                   pattern = input$metadata_sample_pattern[1],
+                                                   ignore.case = TRUE), input$metadata_select_sampleid]
         })
 
 
@@ -255,23 +255,38 @@ mod_data_server <- function(id, r){
                  input$metadata_qc_pattern,
                  input$metadata_sample_pattern)
 
+      # original data
       data_table <- r$tables$meta_data
-      freq_table <- data.frame(table(base::factor(data_table[, input$metadata_select_sampletype])))
-      names(freq_table) <- c("value", "count")
+      freq_table1 <- data.frame(table(base::factor(data_table[, input$metadata_select_sampletype])))
+      names(freq_table1) <- c("value", "count")
 
-      freq_table |>
-        ggplot2::ggplot(ggplot2::aes(x = .data$value,
-                                     y = .data$count)) +
-        ggplot2::geom_bar(stat = "identity",
-                          fill = "lightblue") +
-        ggplot2::geom_text(ggplot2::aes(label = .data$count),
-                           vjust = -0.5,
-                           hjust = 0.5,
-                           size = 4) +
-        ggplot2::labs(x = NULL,
-                      y = NULL,
-                      title = "Type distribution") +
-        ggplot2::theme_minimal()
+      # sample selection based on patterns
+      blank_table <- r$tables$meta_data[grepl(x = r$tables$meta_data[, input$metadata_select_sampletype],
+                                              pattern = input$metadata_blank_pattern,
+                                              ignore.case = TRUE), ]
+      qcpool_table <- r$tables$meta_data[grepl(x = r$tables$meta_data[, input$metadata_select_sampletype],
+                                               pattern = input$metadata_qc_pattern,
+                                               ignore.case = TRUE), ]
+      sample_table <- r$tables$meta_data[grepl(x = r$tables$meta_data[, input$metadata_select_sampletype],
+                                               pattern = input$metadata_sample_pattern,
+                                               ignore.case = TRUE), ]
+
+      data_table <- rbind(
+        blank_table,
+        qcpool_table,
+        sample_table
+      )
+
+      freq_table2 <- data.frame(table(base::factor(data_table[, input$metadata_select_sampletype])))
+      names(freq_table2) <- c("value", "count")
+
+      p1 <- distribution_plot(data = freq_table1,
+                              title = "Type distribution, original")
+      p2 <- distribution_plot(data = freq_table2,
+                              title = "Type distribution, patterns applied ")
+
+      patchwork::wrap_plots(p1, p2,
+                            ncol = 1)
     })
   })
 }

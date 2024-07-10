@@ -16,6 +16,7 @@ Imports:
     DT,
     ggplot2,
     golem (>= 0.4.1),
+    patchwork,
     plotly,
     RColorBrewer,
     readxl,

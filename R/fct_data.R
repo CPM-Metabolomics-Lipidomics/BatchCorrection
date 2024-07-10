@@ -121,3 +121,38 @@ find_delim = function(file_path = NULL) {
 
   return(names(which.max(sep)))
 }
+
+
+#' @title Distribution plot
+#'
+#' @description
+#' Distribution plot of the sample types
+#'
+#' @param data data.frame with all the data.
+#' @param title character(1), title of the plot.
+#'
+#' @return ggplot2 object
+#'
+#' @author Rico Derks
+#'
+#' @importFrom ggplot2 ggplot aes .data geom_bar geom_text labs theme_minimal
+#'
+#' @noRd
+distribution_plot <- function(data = NULL,
+                              title = NULL) {
+  p <- data |>
+    ggplot2::ggplot(ggplot2::aes(x = .data$value,
+                                 y = .data$count)) +
+    ggplot2::geom_bar(stat = "identity",
+                      fill = "lightblue") +
+    ggplot2::geom_text(ggplot2::aes(label = .data$count),
+                       vjust = -0.5,
+                       hjust = 0.5,
+                       size = 4) +
+    ggplot2::labs(x = NULL,
+                  y = NULL,
+                  title = title) +
+    ggplot2::theme_minimal()
+
+  return(p)
+}
