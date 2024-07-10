@@ -3,7 +3,7 @@
 #' @description A shiny Module.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
-#' @param r6 r6 object with all information
+#' @param r r object with all information
 #'
 #' @noRd
 #'
@@ -115,7 +115,7 @@ mod_data_ui <- function(id){
 #'
 #' @noRd
 #'
-mod_data_server <- function(id, r6){
+mod_data_server <- function(id, r){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -125,10 +125,10 @@ mod_data_server <- function(id, r6){
       file_path <- input$rawdata_file$datapath
       data_table <- read_data(file_path = file_path)
 
-      r6$tables$raw_data <- data_table
-      print("Raw data read into R6")
+      r$tables$raw_data <- data_table
+      print("Raw data read into r")
 
-      r6$indices$raw_id_col <- colnames(r6$tables$raw_data)[1]
+      r$indices$raw_id_col <- colnames(r$tables$raw_data)[1]
     })
 
     shiny::observeEvent(input$metadata_file, {
@@ -137,11 +137,11 @@ mod_data_server <- function(id, r6){
       file_path <- input$metadata_file$datapath
       data_table <- read_data(file_path = file_path)
 
-      r6$tables$meta_data <- data_table
-      print("Meta data read into R6")
+      r$tables$meta_data <- data_table
+      print("Meta data read into r")
 
       # update column names
-      column_names <- colnames(r6$tables$meta_data)
+      column_names <- colnames(r$tables$meta_data)
       shiny::updateSelectInput(
         inputId = "metadata_select_sampleid",
         choices = sort(column_names),
@@ -201,7 +201,7 @@ mod_data_server <- function(id, r6){
         input$metadata_blank_pattern,
         input$metadata_qc_pattern,
         input$metadata_sample_pattern), {
-          shiny::req(r6$tables$meta_data,
+          shiny::req(r$tables$meta_data,
                      input$metadata_select_sampleid,
                      input$metadata_select_sampletype,
                      input$metadata_select_batch,
@@ -209,28 +209,29 @@ mod_data_server <- function(id, r6){
                      input$metadata_qc_pattern,
                      input$metadata_sample_pattern)
 
-          r6$indices$meta_id_col <- input$metadata_select_sampleid
-          r6$indices$meta_type_col <- input$metadata_select_sampletype
-          r6$indices$meta_batch_col <- input$metadata_select_batch
+          r$indices$meta_id_col <- input$metadata_select_sampleid
+          r$indices$meta_type_col <- input$metadata_select_sampletype
+          r$indices$meta_acqorder_col <- input$metadata_select_acqorder
+          r$indices$meta_batch_col <- input$metadata_select_batch
 
-          data_table <- r6$tables$meta_data
+          data_table <- r$tables$meta_data
 
-          r6$indices$id_blanks <- data_table[grepl(x = data_table[, input$metadata_select_sampletype],
+          r$indices$id_blanks <- data_table[grepl(x = data_table[, input$metadata_select_sampletype],
                                                    pattern = paste0(".*", input$metadata_blank_pattern, ".*"),
                                                    ignore.case = TRUE), input$metadata_select_sampleid]
-          r6$indices$id_qcpool <- data_table[grepl(x = data_table[, input$metadata_select_sampletype],
+          r$indices$id_qcpool <- data_table[grepl(x = data_table[, input$metadata_select_sampletype],
                                                    pattern = paste0(".*", input$metadata_qc_pattern, ".*"),
                                                    ignore.case = TRUE), input$metadata_select_sampleid]
-          r6$indices$id_samples <- data_table[grepl(x = data_table[, input$metadata_select_sampletype],
+          r$indices$id_samples <- data_table[grepl(x = data_table[, input$metadata_select_sampletype],
                                                     pattern = paste0(".*", input$metadata_samples_pattern, ".*"),
                                                     ignore.case = TRUE), input$metadata_select_sampleid]
         })
 
 
     output$rawdata_preview_table = DT::renderDataTable({
-      shiny::req(r6$tables$raw_data)
+      shiny::req(r$tables$raw_data)
 
-      data_table <- r6$tables$raw_data
+      data_table <- r$tables$raw_data
 
       DT::datatable(data = data_table,
                     options = list(paging = TRUE))
@@ -238,9 +239,9 @@ mod_data_server <- function(id, r6){
 
 
     output$metadata_preview_table = DT::renderDataTable({
-      shiny::req(r6$tables$meta_data)
+      shiny::req(r$tables$meta_data)
 
-      data_table <- r6$tables$meta_data
+      data_table <- r$tables$meta_data
 
       DT::datatable(data = data_table,
                     options = list(paging = TRUE))
@@ -248,13 +249,13 @@ mod_data_server <- function(id, r6){
 
 
     output$metadata_sampletype_plot <- shiny::renderPlot({
-      shiny::req(r6$tables$meta_data,
+      shiny::req(r$tables$meta_data,
                  input$metadata_select_sampletype,
                  input$metadata_blank_pattern,
                  input$metadata_qc_pattern,
                  input$metadata_sample_pattern)
 
-      data_table <- r6$tables$meta_data
+      data_table <- r$tables$meta_data
       freq_table <- data.frame(table(base::factor(data_table[, input$metadata_select_sampletype])))
       names(freq_table) <- c("value", "count")
 

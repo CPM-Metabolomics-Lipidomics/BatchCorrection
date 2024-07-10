@@ -8,21 +8,42 @@
 #' @noRd
 #'
 app_server <- function(input, output, session) {
-  # Your application server logic
 
-  r6 <- shiny::reactiveValues()
+  # for communication between modules
+  r <- shiny::reactiveValues(
+    name = NA,
+    meta_file = NA,
+    data_file = NA,
 
-  shiny::observe({
-    shiny::req(session,
-               r6)
+    #-------------------------------------------------------------- indices ----
+    indices = list(
+      meta_id_col = NULL,
+      meta_type_col = NULL,
+      meta_acqorder_col = NULL,
+      meta_batch_col = NULL,
 
-    r6 <- batchCorrection$new(name = "data")
-    print("R6 object created")
-  })
+      raw_id_col = NULL,
+
+      id_blanks = NULL,
+      id_qcpool = NULL,
+      id_samples = NULL
+    ),
+
+    #--------------------------------------------------------------- tables ----
+    tables = list(
+      raw_data = NULL,
+      meta_data = NULL
+    ),
+
+    #---------------------------------------------------------------- plots ----
+    plots = list(
+      trend_plot = NULL
+    )
+  )
 
   mod_data_server(id = "data",
-                  r6 = r6)
+                  r = r)
 
   mod_visualization_server(id = "viz",
-                           r6 = r6)
+                           r = r)
 }

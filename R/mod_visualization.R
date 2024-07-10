@@ -3,7 +3,7 @@
 #' @description A shiny Module.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
-#' @param r6 r6 object with all information
+#' @param r r object with all information
 #'
 #' @noRd
 #'
@@ -17,8 +17,6 @@ mod_visualization_ui <- function(id){
       bslib::nav_panel(
         title = "Trend plot",
         bslib::card(
-          shiny::p("Show trend plot"),
-          shiny::textOutput(outputId = ns("viz_text_output")),
           plotly::plotlyOutput(
             outputId = ns("viz_trend_plot")
           )
@@ -45,17 +43,31 @@ mod_visualization_ui <- function(id){
 #' @importFrom plotly renderPlotly
 #'
 #' @noRd
-mod_visualization_server <- function(id, r6){
+mod_visualization_server <- function(id, r){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
     output$viz_trend_plot <- plotly::renderPlotly({
-      shiny::req(r6$tables$meta_data,
-                 r6$tables$raw_data)
+      shiny::req(r$tables$meta_data,
+                 r$tables$raw_data,
+                 r$indices$raw_id_col,
+                 r$indices$meta_id_col,
+                 r$indices$meta_acqorder_col,
+                 r$indices$meta_batch_col,
+                 r$indices$id_qcpool)
 
-      print("Show trend plot")
+      print("Create trend plot")
+      trend_data <- prepare_trend_data(data = r$tables$raw_data,
+                                       meta_data = r$tables$meta_data,
+                                       sampleid_raw_col = r$indices$raw_id_col,
+                                       sampleid_meta_col = r$indices$meta_id_col,
+                                       order_col = r$indices$meta_acqorder_col,
+                                       batch_col = r$indices$meta_batch_col,
+                                       id_qcpool = r$indices$id_qcpool)
 
-      trend_plot()
+      trend_plot(data = trend_data,
+                 sampleid_raw_col = r$indices$raw_id_col,
+                 batch_col = r$indices$meta_batch_col)
     })
 
   })
