@@ -10,7 +10,14 @@
 mod_about_ui <- function(id){
   ns <- NS(id)
   tagList(
-     shiny::p("About information will be put here!")
+    bslib::card(
+      shiny::h3("Issues"),
+      shiny::p("If you have any ideas to extend this shiny app please send me an email. If you have any issue please send me an email or go to the ",
+        shiny::a("issue tracker.", href = "http://github.com/ricoderks/BatchCorrection/issues", target = "_blank"),
+        "Cheers, Rico"),
+      shiny::h3("Session info"),
+      shiny::verbatimTextOutput(ns("about_session"))
+    )
   )
 }
 
@@ -21,5 +28,8 @@ mod_about_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
+    output$about_session <- renderPrint({
+      sessioninfo::session_info()
+    })
   })
 }
