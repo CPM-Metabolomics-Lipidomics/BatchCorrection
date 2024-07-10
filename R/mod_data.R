@@ -8,6 +8,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
+#' @importFrom shinyWidgets progressBar updateProgressBar
 #' @importFrom DT dataTableOutput
 #'
 mod_data_ui <- function(id){
@@ -89,17 +90,38 @@ mod_data_ui <- function(id){
               title = "sidebar",
               open = FALSE
             ),
-            shiny::fileInput(
-              inputId = ns("rawdata_file"),
-              label = "Data file:",
-              multiple = FALSE,
-              accept = c(".csv", ".tsv", ".txt", ".xlsx")
+            bslib::card_body(
+              bslib::layout_column_wrap(
+                width = 1 / 3,
+                shiny::fileInput(
+                  inputId = ns("rawdata_file"),
+                  label = "Data file:",
+                  multiple = FALSE,
+                  accept = c(".csv", ".tsv", ".txt", ".xlsx")
+                ),
+                shinyWidgets::progressBar(
+                  id = ns("row_count_bar"),
+                  title = "Row count",
+                  value = 0,
+                  total = 100,
+                  unit_mark = "%"
+                ),
+                shinyWidgets::progressBar(
+                  id = ns("col_count_bar"),
+                  title = "Column count",
+                  value = 0,
+                  total = 100,
+                  unit_mark = "%"
+                )
+              )
             ),
-            shiny::div(
-              DT::dataTableOutput(
-                outputId = ns("rawdata_preview_table")
-              ),
-              style = "font-size:75%;"
+            bslib::card_body(
+              shiny::div(
+                DT::dataTableOutput(
+                  outputId = ns("rawdata_preview_table")
+                ),
+                style = "font-size:75%;"
+              )
             )
           )
         )
@@ -129,7 +151,24 @@ mod_data_server <- function(id, r){
       print("Raw data read into r")
 
       r$indices$raw_id_col <- colnames(r$tables$raw_data)[1]
+
+      shinyWidgets::updateProgressBar(
+        session = session,
+        id = "col_count_bar",
+        title = "Column count",
+        value = ncol(data_table),
+        total = ncol(r$tables$raw_data)
+      )
+
+      shinyWidgets::updateProgressBar(
+        session = session,
+        id = "row_count_bar",
+        title = "Row count",
+        value = nrow(data_table),
+        total = nrow(r$tables$raw_data)
+      )
     })
+
 
     shiny::observeEvent(input$metadata_file, {
       req(input$metadata_file)
