@@ -217,13 +217,13 @@ mod_data_server <- function(id, r){
           data_table <- r$tables$meta_data
 
           r$indices$id_blanks <- data_table[grepl(x = data_table[, input$metadata_select_sampletype],
-                                                   pattern = paste0(".*", input$metadata_blank_pattern, ".*"),
+                                                   pattern = input$metadata_blank_pattern[1],
                                                    ignore.case = TRUE), input$metadata_select_sampleid]
           r$indices$id_qcpool <- data_table[grepl(x = data_table[, input$metadata_select_sampletype],
-                                                   pattern = paste0(".*", input$metadata_qc_pattern, ".*"),
+                                                   pattern = input$metadata_qc_pattern[1],
                                                    ignore.case = TRUE), input$metadata_select_sampleid]
           r$indices$id_samples <- data_table[grepl(x = data_table[, input$metadata_select_sampletype],
-                                                    pattern = paste0(".*", input$metadata_samples_pattern, ".*"),
+                                                    pattern = input$metadata_sample_pattern[1],
                                                     ignore.case = TRUE), input$metadata_select_sampleid]
         })
 

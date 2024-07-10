@@ -1,6 +1,6 @@
 Package: BatchCorrection
 Title: This is a Shiny app to check for possible batch effects
-Version: 0.0.0.9001
+Version: 0.0.0.9002
 Authors@R: 
     person("Rico", "Derks", , "r.j.e.derks@lumc.nl", role = c("cre", "aut"))
 Description: This is a Shiny app to check for possible batch effects. In
@@ -11,12 +11,13 @@ URL: https://github.com/ricoderks/BatchCorrection
 BugReports: https://github.com/ricoderks/BatchCorrection/issues
 Imports: 
     bslib,
+    ComplexHeatmap,
     config (>= 0.3.2),
     DT,
     ggplot2,
     golem (>= 0.4.1),
     plotly,
-    R6,
+    RColorBrewer,
     readxl,
     shiny (>= 1.8.1.1),
     stringr,

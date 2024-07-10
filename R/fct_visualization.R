@@ -147,3 +147,83 @@ prepare_trend_data <- function(data = NULL,
 
   return(data_long)
 }
+
+
+#' @title Prepare data for heatmap plot
+#'
+#' @description
+#' Prepare data for creating a heatmap.
+#'
+#' @param data data.frame in wide format.
+#' @param meta_data data.frame with the meta data.
+#' @param sampleid_raw_col character(1), name of the sample id column in the raw data.
+#' @param sampleid_meta_col character(1), name of the sample id column in the meta data.
+#' @param sampletype_col character(1), name of the sample type column.
+#' @param batch_col character(1), name of the batch column.
+#' @param id_samples character() vector with the names of the sample samples id's.
+#' @param id_qcpool character() vector with the names of the pooled sample id's.
+#'
+#' @return list containing: data matrix, annotations and colors.
+#'
+#' @author Rico Derks
+#'
+#' @noRd
+prepare_heatmap_data <- function(data = NULL,
+                                 meta_data = NULL,
+                                 sampleid_raw_col = NULL,
+                                 sampleid_meta_col = NULL,
+                                 sampletype_col = NULL,
+                                 batch_col = NULL,
+                                 id_samples = NULL,
+                                 id_qcpool = NULL) {
+
+  feature_names <- colnames(data)[-1]
+
+  data <- merge(
+    x = data,
+    y = meta_data,
+    by.x = sampleid_raw_col,
+    by.y = sampleid_meta_col,
+    all.x = TRUE
+  )
+
+  # sort the columns
+  other_columns <- colnames(data)[!(colnames(data) %in% feature_names)]
+  data <- data[, c(other_columns, feature_names)]
+
+  data <- data[data[, sampleid_raw_col] %in% c(id_samples, id_qcpool), ]
+
+  # matrix and scale
+  data_m <- as.matrix(data[, feature_names])
+  data_m <- base::scale(x = data_m,
+                        center = TRUE,
+                        scale = TRUE)
+  rownames(data_m) <- data[, sampleid_raw_col]
+
+  # annotations
+  row_annotations <- data[, c(sampleid_raw_col, sampletype_col, batch_col)]
+  rownames(row_annotations) <- row_annotations[, sampleid_raw_col]
+  row_annotations <- row_annotations[, -1]
+  row_annotations[, batch_col] <- factor(row_annotations[, batch_col])
+
+  colors_annotation <- list(
+    "SampleType" = RColorBrewer::brewer.pal(name = "Set1",
+                                            n = 9)[1:length(unique(data[, sampletype_col]))],
+    "Batch" = RColorBrewer::brewer.pal(name = "Set2",
+                                       n = 8)[1:length(unique(data[, batch_col]))]
+  )
+  names(colors_annotation$SampleType) <- unique(data[, sampletype_col])
+  names(colors_annotation$Batch) <- as.character(unique(data[, batch_col]))
+  names(colors_annotation) <- c(sampletype_col, batch_col)
+
+  res <- list(
+    data = data_m,
+    row_ann = row_annotations,
+    colors_ann = colors_annotation
+  )
+
+  return(res)
+}
+
+
+

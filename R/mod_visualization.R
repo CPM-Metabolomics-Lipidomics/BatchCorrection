@@ -25,7 +25,9 @@ mod_visualization_ui <- function(id){
       bslib::nav_panel(
         title = "Heatmap",
         bslib::card(
-          shiny::p("Show heatmap plot")
+          shiny::plotOutput(
+            outputId = ns("viz_heatmap")
+          )
         )
       ),
       bslib::nav_panel(
@@ -68,6 +70,40 @@ mod_visualization_server <- function(id, r){
       trend_plot(data = trend_data,
                  sampleid_raw_col = r$indices$raw_id_col,
                  batch_col = r$indices$meta_batch_col)
+    })
+
+
+    output$viz_heatmap <- shiny::renderPlot({
+      shiny::req(r$tables$meta_data,
+                 r$tables$raw_data,
+                 r$indices$raw_id_col,
+                 r$indices$meta_id_col,
+                 r$indices$meta_batch_col,
+                 r$indices$meta_type_col,
+                 r$indices$id_qcpool,
+                 r$indices$id_samples)
+
+      print("Create heatmap")
+
+      res <- prepare_heatmap_data(data = r$tables$raw_data,
+                                  meta_data = r$tables$meta_data,
+                                  sampleid_raw_col = r$indices$raw_id_col,
+                                  sampleid_meta_col = r$indices$meta_id_col,
+                                  sampletype_col = r$indices$meta_type_col,
+                                  batch_col = r$indices$meta_batch_col,
+                                  id_qcpool = r$indices$id_qcpool,
+                                  id_samples = r$indices$id_samples)
+
+      ComplexHeatmap::Heatmap(
+        matrix = res$data,
+        heatmap_legend_param = list(title = "Z-score"),
+        right_annotation = ComplexHeatmap::rowAnnotation(
+          df = res$row_ann,
+          col = res$colors_ann
+        ),
+        cluster_rows = TRUE,
+        cluster_columns = FALSE
+      )
     })
 
   })

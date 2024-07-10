@@ -33,13 +33,8 @@ app_server <- function(input, output, session) {
     tables = list(
       raw_data = NULL,
       meta_data = NULL
-    ),
-
-    #---------------------------------------------------------------- plots ----
-    plots = list(
-      trend_plot = NULL
     )
-  )
+  ) # end reactive values
 
   mod_data_server(id = "data",
                   r = r)
