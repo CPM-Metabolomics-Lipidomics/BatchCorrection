@@ -1,6 +1,6 @@
 Package: BatchCorrection
 Title: This is a Shiny app to check for possible batch effects
-Version: 0.0.0.9003
+Version: 0.0.0.9004
 Authors@R: 
     person("Rico", "Derks", , "r.j.e.derks@lumc.nl", role = c("cre", "aut"))
 Description: This is a Shiny app to check for possible batch effects. In
@@ -17,6 +17,7 @@ Imports:
     ggplot2,
     golem (>= 0.4.1),
     patchwork,
+    pcaMethods,
     plotly,
     RColorBrewer,
     readxl,

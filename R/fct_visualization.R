@@ -226,4 +226,229 @@ prepare_heatmap_data <- function(data = NULL,
 }
 
 
+#' @title Create a Hotelling T2 ellipse for a PCA score plot
+#'
+#' @description This function can be used to create a confidence (Hotelling T2) interval for a
+#' PCA score plot.
+#'
+#' @param x x vector
+#' @param y y vector
+#' @param alpha confidence interval
+#' @param len number of points to create the ellipse
+#'
+#' @return A data frame is returned with the points to create the ellipse.
+#'
+#' @details This is a helper function which is used to create a confidence (Hotelling T2) interval for a
+#' PCA score plot.
+#'
+#' @importFrom stats var qf
+#'
+#' @author Rico Derks
+#'
+#' @noRd
+simple_ellipse <- function(x, y, alpha = 0.95, len = 200) {
+  N <- length(x)
+  mypi <- seq(0, 2 * pi, length = len)
 
+  r1 <- sqrt(var(x) * qf(alpha, 2, N - 2) * (2*(N^2 - 1)/(N * (N - 2))))
+  r2 <- sqrt(var(y) * qf(alpha, 2, N - 2) * (2*(N^2 - 1)/(N * (N - 2))))
+
+  result <- data.frame(x = (r1 * cos(mypi) + mean(x)),
+                       y = (r2 * sin(mypi) + mean(y)))
+
+  return(result)
+}
+
+
+#' @title Do PCA and prepare the data for plotting
+#'
+#' @description
+#' Do PCA and prepare the data for plotting.
+#'
+#' @param data data.frame in wide format.
+#' @param meta_data data.frame with the meta data.
+#' @param sampleid_raw_col character(1), name of the sample id column in the raw data.
+#' @param sampleid_meta_col character(1), name of the sample id column in the meta data.
+#' @param id_samples character() vector with the names of the sample samples id's.
+#' @param id_qcpool character() vector with the names of the pooled sample id's.
+#'
+#' @return list with the PCA model, summary of fit, scores and loadings.
+#'
+#' @author Rico Derks
+#'
+#' @importFrom pcaMethods pca
+#' @importFrom tidyr pivot_longer matches
+#'
+#' @noRd
+prepare_pca_data <- function(data = NULL,
+                             meta_data = NULL,
+                             sampleid_raw_col = NULL,
+                             sampleid_meta_col = NULL,
+                             id_samples = NULL,
+                             id_qcpool = NULL) {
+  feature_names <- colnames(data)[-1]
+
+  data <- merge(
+    x = data,
+    y = meta_data,
+    by.x = sampleid_raw_col,
+    by.y = sampleid_meta_col,
+    all.x = TRUE
+  )
+
+  # sort the columns
+  other_columns <- colnames(data)[!(colnames(data) %in% feature_names)]
+  data <- data[, c(other_columns, feature_names)]
+
+  data <- data[data[, sampleid_raw_col] %in% c(id_qcpool, id_samples), ]
+  data_m <- as.matrix(data[, feature_names])
+  keep_features <- apply(data_m, 2, function(x) {
+    mean(is.na(x)) < 0.5
+  })
+
+  data_m <- data_m[, keep_features]
+
+
+  m1 <- pcaMethods::pca(object = data_m,
+                        nPcs = 4,
+                        scale = "uv",
+                        center = TRUE,
+                        cv = "q2")
+
+  m1_sumfit <- data.frame("PC" = factor(paste0("PC", 1:4),
+                                        levels = paste0("PC", 1:4),
+                                        labels = paste0("PC", 1:4)),
+                          "R2cum" = m1@R2cum,
+                          "Q2cum" = m1@cvstat)
+  m1_sumfit <- m1_sumfit |>
+    tidyr::pivot_longer(cols = !tidyr::matches("PC"),
+                        names_to = "variable",
+                        values_to = "value")
+
+  m1_scores <- cbind(m1@scores,
+                     data[, other_columns])
+
+  m1_loadings <- as.data.frame(m1@loadings)
+  m1_loadings$featureNames <- rownames(m1_loadings)
+
+  res <- list(
+    "model" = m1,
+    "summary_of_fit" = m1_sumfit,
+    "scores" = m1_scores,
+    "loadings" = m1_loadings
+  )
+
+  return(res)
+}
+
+
+#' @title PCA scores plot
+#'
+#' @description
+#' PCA scores plot.
+#'
+#' @param data list from output of prepare_pca_data().
+#' @param sampletype_col character(1), name of the sample type column.
+#' @param batch_col character(1), name of the batch column.
+#'
+#' @return ggplot2 object, the scores plot with density plots around it.
+#'
+#' @author Rico Derks
+#'
+#' @importFrom ggplot2 ggplot aes geom_hline geom_vline geom_polygon .data
+#'   geom_point guides theme_minimal theme theme_void geom_density element_line
+#'   element_text labs
+#' @importFrom patchwork plot_spacer plot_layout
+#'
+#' @noRd
+pca_scores_plot <- function(data = NULL,
+                            sampletype_col = NULL,
+                            batch_col = NULL) {
+  pc_main <- data$scores |>
+    ggplot2::ggplot(ggplot2::aes(x = .data$PC1,
+                                 y = .data$PC2)) +
+    ggplot2::geom_hline(yintercept = 0,
+                        color = "grey") +
+    ggplot2::geom_vline(xintercept = 0,
+                        color = "grey") +
+    ggplot2::geom_polygon(data = simple_ellipse(x = data$scores$PC1,
+                                                y = data$scores$PC2,
+                                                alpha = 0.95),
+                          ggplot2::aes(x = .data$x,
+                                       y = .data$y),
+                          colour = "gray",
+                          fill = "white",
+                          alpha = 0.3) +
+    ggplot2::geom_point(ggplot2::aes(colour = as.factor(.data[[batch_col]]),
+                                     shape = .data[[sampletype_col]]),
+                        size = 3) +
+    ggplot2::guides(color = ggplot2::guide_legend(title = "Batch"),
+                    shape = ggplot2::guide_legend(title = "Sample type")) +
+    ggplot2::labs(x = sprintf("PC1 (%0.1f%%)", data$model@R2[1] * 100),
+                  y = sprintf("PC2 (%0.1f%%)", data$model@R2[2] * 100)) +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(legend.position = "bottom")
+
+
+  pc_x_dens <- data$scores |>
+    ggplot2::ggplot(ggplot2::aes(x = .data$PC1,
+                                 fill = as.factor(.data[[batch_col]]))) +
+    ggplot2::geom_density(alpha = 0.3,
+                          linewidth = 0.1) +
+    ggplot2::theme_void() +
+    ggplot2::theme(legend.position = "none",
+                   axis.line.x = ggplot2::element_line(),
+                   axis.title.y = ggplot2::element_text(angle = 90))
+
+  pc_y_dens <- data$scores |>
+    ggplot2::ggplot(ggplot2::aes(y = .data$PC2,
+                                 fill = as.factor(.data[[batch_col]]))) +
+    ggplot2::geom_density(alpha = 0.3,
+                          linewidth = 0.1) +
+    ggplot2::theme_void() +
+    ggplot2::theme(legend.position = "none",
+                   axis.line.y = ggplot2::element_line(),
+                   axis.title.x = ggplot2::element_text(angle = 180))
+
+  p <- pc_x_dens +
+    patchwork::plot_spacer() +
+    pc_main +
+    pc_y_dens +
+    patchwork::plot_layout(ncol = 2,
+                           widths = c(5, 1),
+                           heights = c(1, 5))
+
+  return(p)
+}
+
+
+#' @title PCA loadings plot
+#'
+#' @description
+#' PCA loadings plot.
+#'
+#' @param data list from output of prepare_pca_data().
+#'
+#' @return ggplot2 object, the loadings plot.
+#'
+#' @author Rico Derks
+#'
+#' @importFrom ggplot2 ggplot aes geom_hline geom_vline .data
+#'   geom_point  theme_minimal theme labs
+#'
+#' @noRd
+pca_loadings_plot <- function(data = NULL) {
+  p <- data$loadings |>
+    ggplot2::ggplot(ggplot2::aes(x = .data$PC1,
+                                 y = .data$PC2)) +
+    ggplot2::geom_hline(yintercept = 0,
+                        color = "grey") +
+    ggplot2::geom_vline(xintercept = 0,
+                        color = "grey") +
+    ggplot2::geom_point(size = 3) +
+    ggplot2::labs(x = sprintf("PC1 (%0.1f%%)", data$model@R2[1] * 100),
+                  y = sprintf("PC2 (%0.1f%%)", data$model@R2[2] * 100)) +
+    ggplot2::theme_minimal()
+
+  return(p)
+}

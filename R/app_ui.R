@@ -24,7 +24,7 @@ app_ui <- function(request) {
       ),
       bslib::nav_panel(
         title = "Batch correction",
-        shiny::p("Here several batch correction results will be shown.")
+        shiny::p("Here several batch correction options will be shown.")
       )
     )
   )

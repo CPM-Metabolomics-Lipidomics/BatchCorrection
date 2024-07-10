@@ -13,7 +13,15 @@ mod_visualization_ui <- function(id){
   ns <- NS(id)
   tagList(
     bslib::navset_card_tab(
-      id = ns('skeleton_1'),
+      bslib::nav_panel(
+        title = "Histogram",
+        bslib::card(
+          shiny::p("Show histogram of RSD"),
+          plotly::plotlyOutput(
+            outputId = ns("viz_histogram")
+          )
+        )
+      ),
       bslib::nav_panel(
         title = "Trend plot",
         bslib::card(
@@ -33,7 +41,9 @@ mod_visualization_ui <- function(id){
       bslib::nav_panel(
         title = "PCA",
         bslib::card(
-          shiny::p("Show pca plots")
+          shiny::plotOutput(
+            outputId = ns("viz_pca_plot")
+          )
         )
       )
     ) # end navset_card_tab
@@ -104,6 +114,37 @@ mod_visualization_server <- function(id, r){
         cluster_rows = TRUE,
         cluster_columns = FALSE
       )
+    })
+
+
+    output$viz_pca_plot <- shiny::renderPlot({
+      shiny::req(r$tables$meta_data,
+                 r$tables$raw_data,
+                 r$indices$raw_id_col,
+                 r$indices$meta_id_col,
+                 r$indices$meta_batch_col,
+                 r$indices$meta_type_col,
+                 r$indices$id_qcpool,
+                 r$indices$id_samples)
+
+      print("Create pca plot")
+
+      pca_data <- prepare_pca_data(data = r$tables$raw_data,
+                                   meta_data = r$tables$meta_data,
+                                   sampleid_raw_col = r$indices$raw_id_col,
+                                   sampleid_meta_col = r$indices$meta_id_col,
+                                   id_samples = r$indices$id_samples,
+                                   id_qcpool = r$indices$id_qcpool)
+
+      p1 <- pca_scores_plot(data = pca_data,
+                            sampletype_col = r$indices$meta_type_col,
+                            batch_col = r$indices$meta_batch_col)
+
+      p2 <- pca_loadings_plot(data = pca_data)
+
+      patchwork::wrap_plots(p1, p2,
+                            ncol = 2)
+
     })
 
   })
