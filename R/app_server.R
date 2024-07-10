@@ -41,4 +41,8 @@ app_server <- function(input, output, session) {
 
   mod_visualization_server(id = "viz",
                            r = r)
+
+  mod_help_server(id = "help")
+
+  mod_about_server(id = "about")
 }

@@ -25,6 +25,19 @@ app_ui <- function(request) {
       bslib::nav_panel(
         title = "Batch correction",
         shiny::p("Here several batch correction options will be shown.")
+      ),
+      bslib::nav_spacer(),
+      bslib::nav_menu(
+        title = "Help",
+        bslib::nav_panel(
+          title = "Help",
+          mod_help_ui(id = "help")
+        ),
+        "----",
+        bslib::nav_panel(
+          title = "About",
+          mod_about_ui(id = "about")
+        )
       )
     )
   )
