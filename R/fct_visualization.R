@@ -452,3 +452,120 @@ pca_loadings_plot <- function(data = NULL) {
 
   return(p)
 }
+
+
+#' @title Prepare data for histogram
+#'
+#' @description
+#' Prepare data for histogram
+#'
+#' @param data data.frame in wide format.
+#' @param meta_data data.frame with the meta data.
+#' @param sampleid_raw_col character(1), name of the sample id column in the raw data.
+#' @param sampleid_meta_col character(1), name of the sample id column in the meta data.
+#' @param batch_col character(1), name of the batch column.
+#' @param id_qcpool character() vector with the names of the pooled sample id's.
+#'
+#' @return list with the PCA model, summary of fit, scores and loadings.
+#'
+#' @author Rico Derks
+#'
+#' @importFrom tidyr pivot_longer matches
+#' @importFrom stats sd
+#'
+#' @noRd
+prepare_hist_data <- function(data = NULL,
+                              meta_data = NULL,
+                              sampleid_raw_col = NULL,
+                              sampleid_meta_col = NULL,
+                              batch_col = NULL,
+                              id_qcpool = NULL) {
+  feature_names <- colnames(data)[-1]
+
+  data <- merge(
+    x = data,
+    y = meta_data,
+    by.x = sampleid_raw_col,
+    by.y = sampleid_meta_col,
+    all.x = TRUE
+  )
+
+  # sort the columns
+  other_columns <- colnames(data)[!(colnames(data) %in% feature_names)]
+  data <- data[, c(other_columns, feature_names)]
+
+  data <- data[data[, sampleid_raw_col] %in% id_qcpool, ]
+
+  data_long <- data |>
+    tidyr::pivot_longer(
+      cols = !tidyr::matches(other_columns),
+      names_to = "featureNames",
+      values_to = "value"
+    )
+
+  hist_data_all <- data.frame("rsd" = tapply(data_long, list(data_long$featureNames), function(x) {
+    stats::sd(x$value, na.rm = TRUE) / mean(x$value, na.rm = TRUE)
+  }))
+  hist_data_all$featureName <- rownames(hist_data_all)
+
+
+  hist_data_batch <- as.data.frame(tapply(data_long, list(data_long$featureNames, data_long[, batch_col, drop = TRUE]), function(x) {
+    stats::sd(x$value, na.rm = TRUE) / mean(x$value, na.rm = TRUE)
+  }))
+  hist_data_batch$featureNames <- rownames(hist_data_batch)
+
+  hist_data_batch <- hist_data_batch |>
+    tidyr::pivot_longer(cols = !tidyr::matches("featureNames"),
+                        names_to = "Batch",
+                        values_to = "rsd")
+  hist_data_batch$Batch <- factor(hist_data_batch$Batch)
+
+  res <- list(
+    "overall" = hist_data_all,
+    "batch" = hist_data_batch
+  )
+}
+
+
+#' @title Histogram plot
+#'
+#' @description
+#' Histogram plot.
+#'
+#' @param data list from output of prepare_pca_data().
+#'
+#' @return ggplot2 object, the scores plot with density plots around it.
+#'
+#' @author Rico Derks
+#'
+#' @importFrom ggplot2 ggplot aes geom_vline .data
+#'   theme_minimal theme labs facet_wrap
+#' @importFrom patchwork wrap_plots
+#'
+#' @noRd
+histogram_plot <- function(data = NULL) {
+  p1 <- data$overall |>
+    ggplot2::ggplot(ggplot2::aes(x = .data$rsd)) +
+    ggplot2::geom_histogram(binwidth = 0.05) +
+    ggplot2::geom_vline(xintercept = 0.3,
+                        linetype = 2,
+                        color = "red") +
+    ggplot2::labs(x = "Relative standard deviation",
+                  title = "Over all batches") +
+    ggplot2::theme_minimal()
+
+  p2 <- data$batch |>
+    ggplot2::ggplot(ggplot2::aes(x = .data$rsd)) +
+    ggplot2::geom_histogram(binwidth = 0.05) +
+    ggplot2::geom_vline(xintercept = 0.3,
+                        linetype = 2,
+                        color = "red") +
+    ggplot2::labs(x = "Relative standard deviation",
+                  title = "Per batch") +
+    ggplot2::facet_wrap(. ~ Batch,
+                        ncol = 2) +
+    ggplot2::theme_minimal()
+
+  patchwork::wrap_plots(p1, p2,
+                        ncol = 2)
+}

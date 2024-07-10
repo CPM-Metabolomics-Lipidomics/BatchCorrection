@@ -16,8 +16,7 @@ mod_visualization_ui <- function(id){
       bslib::nav_panel(
         title = "Histogram",
         bslib::card(
-          shiny::p("Show histogram of RSD"),
-          plotly::plotlyOutput(
+          shiny::plotOutput(
             outputId = ns("viz_histogram")
           )
         )
@@ -147,5 +146,25 @@ mod_visualization_server <- function(id, r){
 
     })
 
+
+    output$viz_histogram <- shiny::renderPlot({
+      shiny::req(r$tables$meta_data,
+                 r$tables$raw_data,
+                 r$indices$raw_id_col,
+                 r$indices$meta_id_col,
+                 r$indices$meta_batch_col,
+                 r$indices$id_qcpool)
+
+      print("Create histograms")
+
+      hist_data <- prepare_hist_data(data = r$tables$raw_data,
+                                     meta_data = r$tables$meta_data,
+                                     sampleid_raw_col = r$indices$raw_id_col,
+                                     sampleid_meta_col = r$indices$meta_id_col,
+                                     batch_col = r$indices$meta_batch_col,
+                                     id_qcpool = r$indices$id_qcpool)
+
+      histogram_plot(data = hist_data)
+    })
   })
 }
