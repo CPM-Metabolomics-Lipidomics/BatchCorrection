@@ -24,8 +24,19 @@ mod_visualization_ui <- function(id){
       bslib::nav_panel(
         title = "Trend plot",
         bslib::card(
-          plotly::plotlyOutput(
-            outputId = ns("viz_trend_plot")
+          bslib::page_sidebar(
+            sidebar = bslib::sidebar(
+              open = FALSE,
+              shiny::selectInput(
+                inputId = ns("viz_trend_plot_view_select"),
+                label = "Overview",
+                choices = c("Overall" = "log2fc",
+                            "Per batch" = "log2fc_batch")
+              )
+            ),
+            shiny::plotOutput(
+              outputId = ns("viz_trend_plot")
+            )
           )
         )
       ),
@@ -58,14 +69,21 @@ mod_visualization_server <- function(id, r){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
-    output$viz_trend_plot <- plotly::renderPlotly({
+    output$viz_trend_plot <- shiny::renderPlot({
       shiny::req(r$tables$meta_data,
                  r$tables$raw_data,
                  r$indices$raw_id_col,
                  r$indices$meta_id_col,
                  r$indices$meta_acqorder_col,
                  r$indices$meta_batch_col,
-                 r$indices$id_qcpool)
+                 r$indices$id_qcpool,
+                 input$viz_trend_plot_view_select)
+
+      if(!(input$viz_trend_plot_view_select %in% c("log2fc", "log2fc_batch"))) {
+        yaxis <- "log2fc"
+      } else {
+        yaxis <- input$viz_trend_plot_view_select
+      }
 
       print("Create trend plot")
       trend_data <- prepare_trend_data(data = r$tables$raw_data,
@@ -78,7 +96,8 @@ mod_visualization_server <- function(id, r){
 
       trend_plot(data = trend_data,
                  sampleid_raw_col = r$indices$raw_id_col,
-                 batch_col = r$indices$meta_batch_col)
+                 batch_col = r$indices$meta_batch_col,
+                 yaxis = yaxis)
     })
 
 
