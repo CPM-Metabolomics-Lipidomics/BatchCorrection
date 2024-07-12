@@ -138,7 +138,7 @@ mod_data_ui <- function(id){
 #' @noRd
 #'
 mod_data_server <- function(id, r){
-  moduleServer( id, function(input, output, session){
+  moduleServer(id, function(input, output, session){
     ns <- session$ns
 
     shiny::observeEvent(input$rawdata_file, {
@@ -148,7 +148,7 @@ mod_data_server <- function(id, r){
       data_table <- read_data(file_path = file_path)
 
       r$tables$raw_data <- data_table
-      print("Raw data read into r")
+      print("Raw data read")
 
       r$indices$raw_id_col <- colnames(r$tables$raw_data)[1]
 
@@ -177,7 +177,7 @@ mod_data_server <- function(id, r){
       data_table <- read_data(file_path = file_path)
 
       r$tables$meta_data <- data_table
-      print("Meta data read into r")
+      print("Meta data read")
 
       # update column names
       column_names <- colnames(r$tables$meta_data)
@@ -239,14 +239,19 @@ mod_data_server <- function(id, r){
         input$metadata_select_batch,
         input$metadata_blank_pattern,
         input$metadata_qc_pattern,
-        input$metadata_sample_pattern), {
+        input$metadata_sample_pattern,
+        input$metadata_file,
+        input$rawdata_file), {
           shiny::req(r$tables$meta_data,
+                     r$tables$raw_data,
                      input$metadata_select_sampleid,
                      input$metadata_select_sampletype,
                      input$metadata_select_batch,
                      input$metadata_blank_pattern,
                      input$metadata_qc_pattern,
                      input$metadata_sample_pattern)
+
+          print("Calculating...")
 
           r$indices$meta_id_col <- input$metadata_select_sampleid
           r$indices$meta_type_col <- input$metadata_select_sampletype
@@ -264,6 +269,44 @@ mod_data_server <- function(id, r){
           r$indices$id_samples <- data_table[grepl(x = data_table[, input$metadata_select_sampletype],
                                                    pattern = input$metadata_sample_pattern[1],
                                                    ignore.case = TRUE), input$metadata_select_sampleid]
+
+
+          print("  * trend plot")
+          r$data$trend <- prepare_trend_data(data = r$tables$raw_data,
+                                             meta_data = r$tables$meta_data,
+                                             sampleid_raw_col = r$indices$raw_id_col,
+                                             sampleid_meta_col = r$indices$meta_id_col,
+                                             order_col = r$indices$meta_acqorder_col,
+                                             batch_col = r$indices$meta_batch_col,
+                                             id_qcpool = r$indices$id_qcpool)
+
+          print("  * histogram")
+          r$data$histogram <- prepare_hist_data(data = r$tables$raw_data,
+                                                meta_data = r$tables$meta_data,
+                                                sampleid_raw_col = r$indices$raw_id_col,
+                                                sampleid_meta_col = r$indices$meta_id_col,
+                                                batch_col = r$indices$meta_batch_col,
+                                                id_qcpool = r$indices$id_qcpool)
+
+          print("  * heatmap")
+          r$data$heatmap <- prepare_heatmap_data(data = r$tables$raw_data,
+                                                 meta_data = r$tables$meta_data,
+                                                 sampleid_raw_col = r$indices$raw_id_col,
+                                                 sampleid_meta_col = r$indices$meta_id_col,
+                                                 sampletype_col = r$indices$meta_type_col,
+                                                 batch_col = r$indices$meta_batch_col,
+                                                 id_qcpool = r$indices$id_qcpool,
+                                                 id_samples = r$indices$id_samples)
+
+          print("  * PCA")
+          r$data$pca <- prepare_pca_data(data = r$tables$raw_data,
+                                         meta_data = r$tables$meta_data,
+                                         sampleid_raw_col = r$indices$raw_id_col,
+                                         sampleid_meta_col = r$indices$meta_id_col,
+                                         id_samples = r$indices$id_samples,
+                                         id_qcpool = r$indices$id_qcpool)
+
+          print("...done!")
         })
 
 

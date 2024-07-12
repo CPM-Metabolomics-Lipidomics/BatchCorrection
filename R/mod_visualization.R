@@ -72,6 +72,7 @@ mod_visualization_server <- function(id, r){
     output$viz_trend_plot <- shiny::renderPlot({
       shiny::req(r$tables$meta_data,
                  r$tables$raw_data,
+                 r$data$trend,
                  r$indices$raw_id_col,
                  r$indices$meta_id_col,
                  r$indices$meta_acqorder_col,
@@ -85,16 +86,8 @@ mod_visualization_server <- function(id, r){
         yaxis <- input$viz_trend_plot_view_select
       }
 
-      print("Create trend plot")
-      trend_data <- prepare_trend_data(data = r$tables$raw_data,
-                                       meta_data = r$tables$meta_data,
-                                       sampleid_raw_col = r$indices$raw_id_col,
-                                       sampleid_meta_col = r$indices$meta_id_col,
-                                       order_col = r$indices$meta_acqorder_col,
-                                       batch_col = r$indices$meta_batch_col,
-                                       id_qcpool = r$indices$id_qcpool)
-
-      trend_plot(data = trend_data,
+      print("Show trend plot")
+      trend_plot(data = r$data$trend,
                  sampleid_raw_col = r$indices$raw_id_col,
                  batch_col = r$indices$meta_batch_col,
                  yaxis = yaxis)
@@ -104,6 +97,7 @@ mod_visualization_server <- function(id, r){
     output$viz_heatmap <- shiny::renderPlot({
       shiny::req(r$tables$meta_data,
                  r$tables$raw_data,
+                 r$data$heatmap,
                  r$indices$raw_id_col,
                  r$indices$meta_id_col,
                  r$indices$meta_batch_col,
@@ -111,23 +105,14 @@ mod_visualization_server <- function(id, r){
                  r$indices$id_qcpool,
                  r$indices$id_samples)
 
-      print("Create heatmap")
-
-      res <- prepare_heatmap_data(data = r$tables$raw_data,
-                                  meta_data = r$tables$meta_data,
-                                  sampleid_raw_col = r$indices$raw_id_col,
-                                  sampleid_meta_col = r$indices$meta_id_col,
-                                  sampletype_col = r$indices$meta_type_col,
-                                  batch_col = r$indices$meta_batch_col,
-                                  id_qcpool = r$indices$id_qcpool,
-                                  id_samples = r$indices$id_samples)
+      print("Show heatmap")
 
       ComplexHeatmap::Heatmap(
-        matrix = res$data,
+        matrix = r$data$heatmap$data,
         heatmap_legend_param = list(title = "Z-score"),
         right_annotation = ComplexHeatmap::rowAnnotation(
-          df = res$row_ann,
-          col = res$colors_ann
+          df = r$data$heatmap$row_ann,
+          col = r$data$heatmap$colors_ann
         ),
         cluster_rows = TRUE,
         cluster_columns = FALSE
@@ -138,6 +123,7 @@ mod_visualization_server <- function(id, r){
     output$viz_pca_plot <- shiny::renderPlot({
       shiny::req(r$tables$meta_data,
                  r$tables$raw_data,
+                 r$data$pca,
                  r$indices$raw_id_col,
                  r$indices$meta_id_col,
                  r$indices$meta_batch_col,
@@ -145,20 +131,12 @@ mod_visualization_server <- function(id, r){
                  r$indices$id_qcpool,
                  r$indices$id_samples)
 
-      print("Create pca plot")
+      print("Show pca plots")
 
-      pca_data <- prepare_pca_data(data = r$tables$raw_data,
-                                   meta_data = r$tables$meta_data,
-                                   sampleid_raw_col = r$indices$raw_id_col,
-                                   sampleid_meta_col = r$indices$meta_id_col,
-                                   id_samples = r$indices$id_samples,
-                                   id_qcpool = r$indices$id_qcpool)
-
-      p1 <- pca_scores_plot(data = pca_data,
+      p1 <- pca_scores_plot(data = r$data$pca,
                             sampletype_col = r$indices$meta_type_col,
                             batch_col = r$indices$meta_batch_col)
-
-      p2 <- pca_loadings_plot(data = pca_data)
+      p2 <- pca_loadings_plot(data = r$data$pca)
 
       patchwork::wrap_plots(p1, p2,
                             ncol = 2)
@@ -169,21 +147,15 @@ mod_visualization_server <- function(id, r){
     output$viz_histogram <- shiny::renderPlot({
       shiny::req(r$tables$meta_data,
                  r$tables$raw_data,
+                 r$data$histogram,
                  r$indices$raw_id_col,
                  r$indices$meta_id_col,
                  r$indices$meta_batch_col,
                  r$indices$id_qcpool)
 
-      print("Create histograms")
+      print("Show histograms")
 
-      hist_data <- prepare_hist_data(data = r$tables$raw_data,
-                                     meta_data = r$tables$meta_data,
-                                     sampleid_raw_col = r$indices$raw_id_col,
-                                     sampleid_meta_col = r$indices$meta_id_col,
-                                     batch_col = r$indices$meta_batch_col,
-                                     id_qcpool = r$indices$id_qcpool)
-
-      histogram_plot(data = hist_data)
+      histogram_plot(data = r$data$histogram)
     })
   })
 }

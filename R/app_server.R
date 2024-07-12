@@ -33,6 +33,14 @@ app_server <- function(input, output, session) {
     tables = list(
       raw_data = NULL,
       meta_data = NULL
+    ),
+
+    #----------------------------------------------------------------- data ----
+    data = list(
+      trend = NULL,
+      histogram = NULL,
+      pca = NULL,
+      heatmap = NULL
     )
   ) # end reactive values
 
