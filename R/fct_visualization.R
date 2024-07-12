@@ -196,7 +196,7 @@ pca_loadings_plot <- function(data = NULL) {
 #'
 #' @param data list from output of prepare_pca_data().
 #'
-#' @return ggplot2 object, the scores plot with density plots around it.
+#' @return ggplot2 object
 #'
 #' @author Rico Derks
 #'
@@ -230,4 +230,44 @@ histogram_plot <- function(data = NULL) {
 
   patchwork::wrap_plots(p1, p2,
                         ncol = 2)
+}
+
+
+#' @title Relative log expression plot
+#'
+#' @description
+#' Relative log expression plot.
+#'
+#' @param data list from output of prepare_pca_data().
+#' @param sampleid_raw_col character(1), name of the sample id column in the raw data.
+#' @param batch_col character(1), name of the batch column in the meta data.
+#'
+#' @return ggplot2 object.
+#'
+#' @author Rico Derks
+#'
+#' @importFrom ggplot2 ggplot aes geom_hline .data geom_boxplot
+#'   theme_minimal theme labs guides guide_legend
+#'
+#' @noRd
+rle_plot <- function(data = NULL,
+                     sampleid_raw_col = NULL,
+                     batch_col = NULL) {
+  p <- data |>
+    ggplot2::ggplot(ggplot2::aes(x = .data[[sampleid_raw_col]],
+                                 y = log10(.data[["value"]]),
+                                 fill = as.factor(.data[[batch_col]]))) +
+    ggplot2::geom_hline(yintercept = 0,
+                        color = "grey") +
+    ggplot2::geom_boxplot() +
+    ggplot2::labs(x = "Sample ID",
+                  y = "Deviation") +
+    ggplot2::guides(fill = ggplot2::guide_legend(title = "Batch")) +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45,
+                                                       hjust = 1,
+                                                       size = 5),
+                   legend.position = "bottom")
+
+  return(p)
 }

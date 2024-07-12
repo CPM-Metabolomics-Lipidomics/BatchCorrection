@@ -40,7 +40,8 @@ app_server <- function(input, output, session) {
       trend = NULL,
       histogram = NULL,
       pca = NULL,
-      heatmap = NULL
+      heatmap = NULL,
+      rle = NULL
     )
   ) # end reactive values
 

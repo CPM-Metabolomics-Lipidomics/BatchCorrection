@@ -480,3 +480,66 @@ prepare_hist_data <- function(data = NULL,
     "batch" = hist_data_batch
   )
 }
+
+
+#' @title Prepare data for a relative log expression plot
+#'
+#' @description
+#' Prepare data for a relative log expression plot.
+#'
+#' @param data data.frame in wide format.
+#' @param meta_data data.frame with the meta data.
+#' @param sampleid_raw_col character(1), name of the sample id column in the raw data.
+#' @param sampleid_meta_col character(1), name of the sample id column in the meta data.
+#' @param order_col character(1), name of the acquisition order column in the meta data.
+#' @param id_samples character() vector with the names of the sample samples id's.
+#'
+#' @return data.frame
+#'
+#' @author Rico Derks
+#'
+#' @importFrom tidyr pivot_longer matches
+#' @importFrom stats median
+#'
+#' @noRd
+prepare_rle_data <- function(data = NULL,
+                             meta_data = NULL,
+                             sampleid_raw_col = NULL,
+                             sampleid_meta_col = NULL,
+                             order_col = NULL,
+                             id_samples = NULL) {
+  feature_names <- colnames(data)[-1]
+
+  data <- merge(
+    x = data,
+    y = meta_data,
+    by.x = sampleid_raw_col,
+    by.y = sampleid_meta_col,
+    all.x = TRUE
+  )
+
+  # sort the columns
+  other_columns <- colnames(data)[!(colnames(data) %in% feature_names)]
+  data <- data[, c(other_columns, feature_names)]
+
+  data <- data[data[, sampleid_raw_col] %in% id_samples, ]
+
+  # calculate the deviation to the median
+  feature_medians <- apply(data[, feature_names], 2, stats::median, na.rm = TRUE)
+  data[, feature_names] <- t(t(data[, feature_names]) - feature_medians)
+
+  data_long <- data |>
+    tidyr::pivot_longer(
+      cols = !tidyr::matches(other_columns),
+      names_to = "featureNames",
+      values_to = "value"
+    )
+
+  sample_order <- data[order(data[, order_col]), sampleid_raw_col]
+
+  data_long[, sampleid_raw_col] <- factor(x = data_long[, sampleid_raw_col, drop = TRUE],
+                                          levels = sample_order,
+                                          labels = sample_order)
+
+  return(data_long)
+}

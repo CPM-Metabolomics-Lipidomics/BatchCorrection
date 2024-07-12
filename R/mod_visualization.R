@@ -55,6 +55,14 @@ mod_visualization_ui <- function(id){
             outputId = ns("viz_pca_plot")
           )
         )
+      ),
+      bslib::nav_panel(
+        title = "Relative log expression",
+        bslib::card(
+          shiny::plotOutput(
+            outputId = ns("viz_rle_plot")
+          )
+        )
       )
     ) # end navset_card_tab
   )
@@ -156,6 +164,19 @@ mod_visualization_server <- function(id, r){
       print("Show histograms")
 
       histogram_plot(data = r$data$histogram)
+    })
+
+
+    output$viz_rle_plot <- shiny::renderPlot({
+      shiny::req(r$data$rle,
+                 r$indices$raw_id_col,
+                 r$indices$meta_batch_col)
+
+      print("Show RLE plot")
+
+      rle_plot(data = r$data$rle,
+               sampleid_raw_col = r$indices$raw_id_col,
+               batch_col = r$indices$meta_batch_col)
     })
   })
 }
