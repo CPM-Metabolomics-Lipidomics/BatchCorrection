@@ -398,6 +398,8 @@ prepare_pca_data <- function(data = NULL,
   m1_loadings <- as.data.frame(m1@loadings)
   m1_loadings$featureNames <- rownames(m1_loadings)
 
+  names(m1@R2) <- paste0("PC", 1:4)
+
   res <- list(
     "model" = m1,
     "summary_of_fit" = m1_sumfit,

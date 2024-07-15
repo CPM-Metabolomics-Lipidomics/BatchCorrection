@@ -65,9 +65,26 @@ mod_batch_correction_ui <- function(id){
         ),
         bslib::nav_panel(
           title = "PCA",
-          bslib::card(
-            shiny::plotOutput(
-              outputId = ns("bc_pca_plot")
+          bslib::page_sidebar(
+            sidebar = bslib::sidebar(
+              open = FALSE,
+              shiny::selectInput(
+                inputId = ns("bc_pca_x"),
+                label = "x-axis",
+                choices = paste0("PC", 1:4),
+                selected = "PC1"
+              ),
+              shiny::selectInput(
+                inputId = ns("bc_pca_y"),
+                label = "y-axis",
+                choices = paste0("PC", 1:4),
+                selected = "PC2"
+              )
+            ),
+            bslib::card(
+              shiny::plotOutput(
+                outputId = ns("bc_pca_plot")
+              )
             )
           )
         ),
@@ -99,6 +116,7 @@ mod_batch_correction_server <- function(id, r){
       switch(
         input$bc_select_method,
         "median" = {
+          print("Median batch correction")
           r$tables$bc_data <- median_bc(data = r$tables$clean_data,
                                         meta_data = r$tables$meta_data,
                                         sampleid_raw_col = r$indices$raw_id_col,
@@ -218,14 +236,20 @@ mod_batch_correction_server <- function(id, r){
                  r$indices$meta_batch_col,
                  r$indices$meta_type_col,
                  r$indices$id_qcpool,
-                 r$indices$id_samples)
+                 r$indices$id_samples,
+                 input$bc_pca_x,
+                 input$bc_pca_y)
 
       print("Show pca plots")
 
       p1 <- pca_scores_plot(data = r$data_bc$pca,
                             sampletype_col = r$indices$meta_type_col,
-                            batch_col = r$indices$meta_batch_col)
-      p2 <- pca_loadings_plot(data = r$data_bc$pca)
+                            batch_col = r$indices$meta_batch_col,
+                            xaxis = input$bc_pca_x,
+                            yaxis = input$bc_pca_y)
+      p2 <- pca_loadings_plot(data = r$data_bc$pca,
+                              xaxis = input$bc_pca_x,
+                              yaxis = input$bc_pca_y)
 
       patchwork::wrap_plots(p1, p2,
                             ncol = 2)

@@ -87,6 +87,8 @@ simple_ellipse <- function(x, y, alpha = 0.95, len = 200) {
 #' @param data list from output of prepare_pca_data().
 #' @param sampletype_col character(1), name of the sample type column.
 #' @param batch_col character(1), name of the batch column.
+#' @param xaxis character(1), which PC to show on the x-axis.
+#' @param yaxis character(1), which PC to show on the y-axis.
 #'
 #' @return ggplot2 object, the scores plot with density plots around it.
 #'
@@ -100,16 +102,18 @@ simple_ellipse <- function(x, y, alpha = 0.95, len = 200) {
 #' @noRd
 pca_scores_plot <- function(data = NULL,
                             sampletype_col = NULL,
-                            batch_col = NULL) {
+                            batch_col = NULL,
+                            xaxis = "PC1",
+                            yaxis = "PC2") {
   pc_main <- data$scores |>
-    ggplot2::ggplot(ggplot2::aes(x = .data$PC1,
-                                 y = .data$PC2)) +
+    ggplot2::ggplot(ggplot2::aes(x = .data[[xaxis]],
+                                 y = .data[[yaxis]])) +
     ggplot2::geom_hline(yintercept = 0,
                         color = "grey") +
     ggplot2::geom_vline(xintercept = 0,
                         color = "grey") +
-    ggplot2::geom_polygon(data = simple_ellipse(x = data$scores$PC1,
-                                                y = data$scores$PC2,
+    ggplot2::geom_polygon(data = simple_ellipse(x = data$scores[[xaxis]],
+                                                y = data$scores[[yaxis]],
                                                 alpha = 0.95),
                           ggplot2::aes(x = .data$x,
                                        y = .data$y),
@@ -121,14 +125,14 @@ pca_scores_plot <- function(data = NULL,
                         size = 3) +
     ggplot2::guides(color = ggplot2::guide_legend(title = "Batch"),
                     shape = ggplot2::guide_legend(title = "Sample type")) +
-    ggplot2::labs(x = sprintf("PC1 (%0.1f%%)", data$model@R2[1] * 100),
-                  y = sprintf("PC2 (%0.1f%%)", data$model@R2[2] * 100)) +
+    ggplot2::labs(x = sprintf("%s (%0.1f%%)", xaxis,  data$model@R2[xaxis] * 100),
+                  y = sprintf("%s (%0.1f%%)", yaxis, data$model@R2[yaxis] * 100)) +
     ggplot2::theme_minimal() +
     ggplot2::theme(legend.position = "bottom")
 
 
   pc_x_dens <- data$scores |>
-    ggplot2::ggplot(ggplot2::aes(x = .data$PC1,
+    ggplot2::ggplot(ggplot2::aes(x = .data[[xaxis]],
                                  fill = as.factor(.data[[batch_col]]))) +
     ggplot2::geom_density(alpha = 0.3,
                           linewidth = 0.1) +
@@ -138,7 +142,7 @@ pca_scores_plot <- function(data = NULL,
                    axis.title.y = ggplot2::element_text(angle = 90))
 
   pc_y_dens <- data$scores |>
-    ggplot2::ggplot(ggplot2::aes(y = .data$PC2,
+    ggplot2::ggplot(ggplot2::aes(y = .data[[yaxis]],
                                  fill = as.factor(.data[[batch_col]]))) +
     ggplot2::geom_density(alpha = 0.3,
                           linewidth = 0.1) +
@@ -165,6 +169,8 @@ pca_scores_plot <- function(data = NULL,
 #' PCA loadings plot.
 #'
 #' @param data list from output of prepare_pca_data().
+#' @param xaxis character(1), which PC to show on the x-axis.
+#' @param yaxis character(1), which PC to show on the y-axis.
 #'
 #' @return ggplot2 object, the loadings plot.
 #'
@@ -174,17 +180,19 @@ pca_scores_plot <- function(data = NULL,
 #'   geom_point  theme_minimal theme labs
 #'
 #' @noRd
-pca_loadings_plot <- function(data = NULL) {
+pca_loadings_plot <- function(data = NULL,
+                              xaxis = "PC1",
+                              yaxis = "PC2") {
   p <- data$loadings |>
-    ggplot2::ggplot(ggplot2::aes(x = .data$PC1,
-                                 y = .data$PC2)) +
+    ggplot2::ggplot(ggplot2::aes(x = .data[[xaxis]],
+                                 y = .data[[yaxis]])) +
     ggplot2::geom_hline(yintercept = 0,
                         color = "grey") +
     ggplot2::geom_vline(xintercept = 0,
                         color = "grey") +
     ggplot2::geom_point(size = 3) +
-    ggplot2::labs(x = sprintf("PC1 (%0.1f%%)", data$model@R2[1] * 100),
-                  y = sprintf("PC2 (%0.1f%%)", data$model@R2[2] * 100)) +
+    ggplot2::labs(x = sprintf("%s (%0.1f%%)", xaxis, data$model@R2[xaxis] * 100),
+                  y = sprintf("%s (%0.1f%%)", yaxis, data$model@R2[yaxis] * 100)) +
     ggplot2::theme_minimal()
 
   return(p)
