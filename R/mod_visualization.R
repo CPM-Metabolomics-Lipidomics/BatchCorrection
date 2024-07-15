@@ -79,7 +79,7 @@ mod_visualization_server <- function(id, r){
 
     output$viz_trend_plot <- shiny::renderPlot({
       shiny::req(r$tables$meta_data,
-                 r$tables$raw_data,
+                 r$tables$clean_data,
                  r$data$trend,
                  r$indices$raw_id_col,
                  r$indices$meta_id_col,
@@ -104,7 +104,7 @@ mod_visualization_server <- function(id, r){
 
     output$viz_heatmap <- shiny::renderPlot({
       shiny::req(r$tables$meta_data,
-                 r$tables$raw_data,
+                 r$tables$clean_data,
                  r$data$heatmap,
                  r$indices$raw_id_col,
                  r$indices$meta_id_col,
@@ -130,7 +130,7 @@ mod_visualization_server <- function(id, r){
 
     output$viz_pca_plot <- shiny::renderPlot({
       shiny::req(r$tables$meta_data,
-                 r$tables$raw_data,
+                 r$tables$clean_data,
                  r$data$pca,
                  r$indices$raw_id_col,
                  r$indices$meta_id_col,
@@ -154,7 +154,7 @@ mod_visualization_server <- function(id, r){
 
     output$viz_histogram <- shiny::renderPlot({
       shiny::req(r$tables$meta_data,
-                 r$tables$raw_data,
+                 r$tables$clean_data,
                  r$data$histogram,
                  r$indices$raw_id_col,
                  r$indices$meta_id_col,

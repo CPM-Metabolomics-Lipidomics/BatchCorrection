@@ -293,7 +293,7 @@ mod_data_server <- function(id, r){
 
           print("Calculating...")
           print("  * trend plot")
-          r$data$trend <- prepare_trend_data(data = r$tables$raw_data,
+          r$data$trend <- prepare_trend_data(data = r$tables$clean_data,
                                              meta_data = r$tables$meta_data,
                                              sampleid_raw_col = r$indices$raw_id_col,
                                              sampleid_meta_col = r$indices$meta_id_col,
@@ -302,7 +302,7 @@ mod_data_server <- function(id, r){
                                              id_qcpool = r$indices$id_qcpool)
 
           print("  * histogram")
-          r$data$histogram <- prepare_hist_data(data = r$tables$raw_data,
+          r$data$histogram <- prepare_hist_data(data = r$tables$clean_data,
                                                 meta_data = r$tables$meta_data,
                                                 sampleid_raw_col = r$indices$raw_id_col,
                                                 sampleid_meta_col = r$indices$meta_id_col,
@@ -310,7 +310,7 @@ mod_data_server <- function(id, r){
                                                 id_qcpool = r$indices$id_qcpool)
 
           print("  * heatmap")
-          r$data$heatmap <- prepare_heatmap_data(data = r$tables$raw_data,
+          r$data$heatmap <- prepare_heatmap_data(data = r$tables$clean_data,
                                                  meta_data = r$tables$meta_data,
                                                  sampleid_raw_col = r$indices$raw_id_col,
                                                  sampleid_meta_col = r$indices$meta_id_col,
@@ -320,7 +320,7 @@ mod_data_server <- function(id, r){
                                                  id_samples = r$indices$id_samples)
 
           print("  * PCA")
-          r$data$pca <- prepare_pca_data(data = r$tables$raw_data,
+          r$data$pca <- prepare_pca_data(data = r$tables$clean_data,
                                          meta_data = r$tables$meta_data,
                                          sampleid_raw_col = r$indices$raw_id_col,
                                          sampleid_meta_col = r$indices$meta_id_col,
@@ -328,7 +328,7 @@ mod_data_server <- function(id, r){
                                          id_qcpool = r$indices$id_qcpool)
 
           print("  * RLE")
-          r$data$rle <- prepare_rle_data(data = r$tables$raw_data,
+          r$data$rle <- prepare_rle_data(data = r$tables$clean_data,
                                          meta_data = r$tables$meta_data,
                                          sampleid_raw_col = r$indices$raw_id_col,
                                          sampleid_meta_col = r$indices$meta_id_col,
