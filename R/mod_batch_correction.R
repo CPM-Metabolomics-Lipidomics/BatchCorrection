@@ -22,9 +22,15 @@ mod_batch_correction_ui <- function(id){
                       "ComBat (SVA)" = "combat"),
           selected = "median"
         ),
+        shiny::uiOutput(
+          outputId = ns("bc_options_ui")
+        ),
         shiny::actionButton(
           inputId = ns("bc_apply_method"),
           label = "Apply correction"
+        ),
+        shiny::uiOutput(
+          outputId = ns("bc_status_text")
         )
       ),
       bslib::navset_card_tab(
@@ -108,10 +114,44 @@ mod_batch_correction_server <- function(id, r){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
+    shiny::observeEvent(input$bc_select_method, {
+
+      if(input$bc_select_method == "loess") {
+        output$bc_options_ui <- shiny::renderUI({
+          shiny::tagList(
+            shiny::selectInput(
+              inputId = ns("bc_loess_batch"),
+              label = "Batch / over all",
+              choices = c("Per batch" = "batch",
+                          "Over all batches" = "over_all"),
+              selected = "batch"
+            ),
+            shiny::numericInput(
+              inputId = ns("bc_loess_span"),
+              label = "Span",
+              value = 0.75,
+              min = 0,
+              max = 1,
+              step = 0.01
+            )
+          )
+        })
+      } else {
+        output$bc_options_ui <- shiny::renderUI({
+          NULL
+        })
+      }
+    })
+
+
     shiny::observeEvent(input$bc_apply_method, {
       shiny::req(input$bc_select_method,
                  r$tables$clean_data,
                  r$tables$meta_data)
+
+      output$bc_status_text <- shiny::renderUI({
+        NULL
+      })
 
       switch(
         input$bc_select_method,
@@ -124,55 +164,75 @@ mod_batch_correction_server <- function(id, r){
                                         id_samples = r$indices$id_samples,
                                         id_qcpool = r$indices$id_qcpool,
                                         batch_col = r$indices$meta_batch_col)
+        },
+        "loess" = {
+          print("LOESS batch correction")
+          r$tables$bc_data <- loess_bc(data = r$tables$clean_data,
+                                       meta_data = r$tables$meta_data,
+                                       sampleid_raw_col = r$indices$raw_id_col,
+                                       sampleid_meta_col = r$indices$meta_id_col,
+                                       id_samples = r$indices$id_samples,
+                                       id_qcpool = r$indices$id_qcpool,
+                                       batch_col = r$indices$meta_batch_col,
+                                       order_col = r$indices$meta_acqorder_col,
+                                       span = input$bc_loess_span,
+                                       method = input$bc_loess_batch)
         }
       )
 
-      print("Calculating...")
-      print("  * trend plot")
-      r$data_bc$trend <- prepare_trend_data(data = r$tables$bc_data,
-                                            meta_data = r$tables$meta_data,
-                                            sampleid_raw_col = r$indices$raw_id_col,
-                                            sampleid_meta_col = r$indices$meta_id_col,
-                                            order_col = r$indices$meta_acqorder_col,
-                                            batch_col = r$indices$meta_batch_col,
-                                            id_qcpool = r$indices$id_qcpool)
+      if(!is.null(r$tables$bc_data)) {
+        print("Calculating...")
+        print("  * trend plot")
+        r$data_bc$trend <- prepare_trend_data(data = r$tables$bc_data,
+                                              meta_data = r$tables$meta_data,
+                                              sampleid_raw_col = r$indices$raw_id_col,
+                                              sampleid_meta_col = r$indices$meta_id_col,
+                                              order_col = r$indices$meta_acqorder_col,
+                                              batch_col = r$indices$meta_batch_col,
+                                              id_qcpool = r$indices$id_qcpool)
 
-      print("  * histogram")
-      r$data_bc$histogram <- prepare_hist_data(data = r$tables$bc_data,
-                                               meta_data = r$tables$meta_data,
-                                               sampleid_raw_col = r$indices$raw_id_col,
-                                               sampleid_meta_col = r$indices$meta_id_col,
-                                               batch_col = r$indices$meta_batch_col,
-                                               id_qcpool = r$indices$id_qcpool)
+        print("  * histogram")
+        r$data_bc$histogram <- prepare_hist_data(data = r$tables$bc_data,
+                                                 meta_data = r$tables$meta_data,
+                                                 sampleid_raw_col = r$indices$raw_id_col,
+                                                 sampleid_meta_col = r$indices$meta_id_col,
+                                                 batch_col = r$indices$meta_batch_col,
+                                                 id_qcpool = r$indices$id_qcpool)
 
-      print("  * heatmap")
-      r$data_bc$heatmap <- prepare_heatmap_data(data = r$tables$bc_data,
-                                                meta_data = r$tables$meta_data,
-                                                sampleid_raw_col = r$indices$raw_id_col,
-                                                sampleid_meta_col = r$indices$meta_id_col,
-                                                sampletype_col = r$indices$meta_type_col,
-                                                batch_col = r$indices$meta_batch_col,
-                                                id_qcpool = r$indices$id_qcpool,
-                                                id_samples = r$indices$id_samples)
+        print("  * heatmap")
+        r$data_bc$heatmap <- prepare_heatmap_data(data = r$tables$bc_data,
+                                                  meta_data = r$tables$meta_data,
+                                                  sampleid_raw_col = r$indices$raw_id_col,
+                                                  sampleid_meta_col = r$indices$meta_id_col,
+                                                  sampletype_col = r$indices$meta_type_col,
+                                                  batch_col = r$indices$meta_batch_col,
+                                                  id_qcpool = r$indices$id_qcpool,
+                                                  id_samples = r$indices$id_samples)
 
-      print("  * PCA")
-      r$data_bc$pca <- prepare_pca_data(data = r$tables$bc_data,
-                                        meta_data = r$tables$meta_data,
-                                        sampleid_raw_col = r$indices$raw_id_col,
-                                        sampleid_meta_col = r$indices$meta_id_col,
-                                        id_samples = r$indices$id_samples,
-                                        id_qcpool = r$indices$id_qcpool)
+        print("  * PCA")
+        r$data_bc$pca <- prepare_pca_data(data = r$tables$bc_data,
+                                          meta_data = r$tables$meta_data,
+                                          sampleid_raw_col = r$indices$raw_id_col,
+                                          sampleid_meta_col = r$indices$meta_id_col,
+                                          id_samples = r$indices$id_samples,
+                                          id_qcpool = r$indices$id_qcpool)
 
-      print("  * RLE")
-      r$data_bc$rle <- prepare_rle_data(data = r$tables$bc_data,
-                                        meta_data = r$tables$meta_data,
-                                        sampleid_raw_col = r$indices$raw_id_col,
-                                        sampleid_meta_col = r$indices$meta_id_col,
-                                        order_col = r$indices$meta_acqorder_col,
-                                        id_samples = r$indices$id_samples)
+        print("  * RLE")
+        r$data_bc$rle <- prepare_rle_data(data = r$tables$bc_data,
+                                          meta_data = r$tables$meta_data,
+                                          sampleid_raw_col = r$indices$raw_id_col,
+                                          sampleid_meta_col = r$indices$meta_id_col,
+                                          order_col = r$indices$meta_acqorder_col,
+                                          id_samples = r$indices$id_samples)
 
-      print("...done!")
-
+        print("...done!")
+      } else {
+        output$bc_status_text <- shiny::renderUI({
+          shiny::p(shiny::span("Error: there are missing values in the pooled samples.",
+                               style = "color:red;"),
+                   "Please select a different batch correction method or remove the missing values!")
+        })
+      }
     })
 
 
