@@ -32,7 +32,8 @@ app_server <- function(input, output, session) {
     #--------------------------------------------------------------- tables ----
     tables = list(
       raw_data = NULL,
-      meta_data = NULL
+      meta_data = NULL,
+      clean_data = NULL
     ),
 
     #----------------------------------------------------------------- data ----

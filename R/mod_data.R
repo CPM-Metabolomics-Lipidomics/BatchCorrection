@@ -87,8 +87,16 @@ mod_data_ui <- function(id){
         bslib::card(
           bslib::page_sidebar(
             sidebar = bslib::sidebar(
-              title = "sidebar",
-              open = FALSE
+              title = "Raw data",
+              open = FALSE,
+              shiny::numericInput(
+                inputId = ns("raw_missing"),
+                label = "Max. missing values [%]",
+                value = 50,
+                min = 0,
+                max = 100,
+                step = 1
+              )
             ),
             bslib::card_body(
               bslib::layout_column_wrap(
@@ -117,6 +125,13 @@ mod_data_ui <- function(id){
             ),
             bslib::card_body(
               shiny::div(
+                shiny::selectInput(
+                  inputId = ns("raw_select_table"),
+                  label = "Select table",
+                  choices = c("Raw table" = "raw_data",
+                              "Filtered table" = "clean_data"),
+                  selected = "clean_data"
+                ),
                 DT::dataTableOutput(
                   outputId = ns("rawdata_preview_table")
                 ),
@@ -151,22 +166,6 @@ mod_data_server <- function(id, r){
       print("Raw data read")
 
       r$indices$raw_id_col <- colnames(r$tables$raw_data)[1]
-
-      shinyWidgets::updateProgressBar(
-        session = session,
-        id = "col_count_bar",
-        title = "Column count",
-        value = ncol(data_table),
-        total = ncol(r$tables$raw_data)
-      )
-
-      shinyWidgets::updateProgressBar(
-        session = session,
-        id = "row_count_bar",
-        title = "Row count",
-        value = nrow(data_table),
-        total = nrow(r$tables$raw_data)
-      )
     })
 
 
@@ -241,7 +240,8 @@ mod_data_server <- function(id, r){
         input$metadata_qc_pattern,
         input$metadata_sample_pattern,
         input$metadata_file,
-        input$rawdata_file), {
+        input$rawdata_file,
+        input$raw_missing), {
           shiny::req(r$tables$meta_data,
                      r$tables$raw_data,
                      input$metadata_select_sampleid,
@@ -250,8 +250,6 @@ mod_data_server <- function(id, r){
                      input$metadata_blank_pattern,
                      input$metadata_qc_pattern,
                      input$metadata_sample_pattern)
-
-          print("Calculating...")
 
           r$indices$meta_id_col <- input$metadata_select_sampleid
           r$indices$meta_type_col <- input$metadata_select_sampletype
@@ -270,7 +268,30 @@ mod_data_server <- function(id, r){
                                                    pattern = input$metadata_sample_pattern[1],
                                                    ignore.case = TRUE), input$metadata_select_sampleid]
 
+          raw_missing <- input$raw_missing / 100
+          keep_features <- apply(r$tables$raw_data, 2, function(x) {
+            mean(is.na(x)) <= raw_missing
+          })
+          r$tables$clean_data <-
+            r$tables$raw_data[r$tables$raw_data[, r$indices$raw_id_col] %in% c(r$indices$id_blanks, r$indices$id_qcpool, r$indices$id_samples), keep_features]
 
+          shinyWidgets::updateProgressBar(
+            session = session,
+            id = "col_count_bar",
+            title = "Column count",
+            value = ncol(r$tables$clean_data) - 1,
+            total = ncol(r$tables$raw_data) - 1
+          )
+
+          shinyWidgets::updateProgressBar(
+            session = session,
+            id = "row_count_bar",
+            title = "Row count",
+            value = nrow(r$tables$clean_data),
+            total = nrow(r$tables$raw_data)
+          )
+
+          print("Calculating...")
           print("  * trend plot")
           r$data$trend <- prepare_trend_data(data = r$tables$raw_data,
                                              meta_data = r$tables$meta_data,
@@ -319,9 +340,10 @@ mod_data_server <- function(id, r){
 
 
     output$rawdata_preview_table = DT::renderDataTable({
-      shiny::req(r$tables$raw_data)
+      shiny::req(r$tables$raw_data,
+                 input$raw_select_table)
 
-      data_table <- r$tables$raw_data
+      data_table <- r$tables[[input$raw_select_table]]
 
       DT::datatable(data = data_table,
                     options = list(paging = TRUE))
