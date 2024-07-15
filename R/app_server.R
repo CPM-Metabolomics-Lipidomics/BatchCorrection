@@ -33,11 +33,21 @@ app_server <- function(input, output, session) {
     tables = list(
       raw_data = NULL,
       meta_data = NULL,
-      clean_data = NULL
+      clean_data = NULL,
+      bc_data = NULL
     ),
 
     #----------------------------------------------------------------- data ----
+    # before correction
     data = list(
+      trend = NULL,
+      histogram = NULL,
+      pca = NULL,
+      heatmap = NULL,
+      rle = NULL
+    ),
+    # after correction
+    data_bc = list(
       trend = NULL,
       histogram = NULL,
       pca = NULL,
@@ -51,6 +61,9 @@ app_server <- function(input, output, session) {
 
   mod_visualization_server(id = "viz",
                            r = r)
+
+  mod_batch_correction_server(id = "bc",
+                              r = r)
 
   mod_help_server(id = "help")
 

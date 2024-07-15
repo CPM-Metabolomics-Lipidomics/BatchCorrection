@@ -14,7 +14,7 @@
 #' @author Rico Derks
 #'
 #' @importFrom ggplot2 ggplot aes geom_point geom_line theme_minimal labs
-#'   geom_hline guides guide_legend
+#'   geom_hline guides guide_legend theme element_text
 #'
 #' @noRd
 trend_plot <- function(data = NULL,
@@ -37,7 +37,9 @@ trend_plot <- function(data = NULL,
     ggplot2::guides(color = ggplot2::guide_legend(title = "Batch")) +
     ggplot2::labs(x = "Sample ID",
                   y = "Log2(fold change)") +
-    ggplot2::theme_minimal()
+    ggplot2::theme_minimal() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45,
+                                                       hjust = 1))
 
   return(p)
 }

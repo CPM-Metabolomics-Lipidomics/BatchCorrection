@@ -19,12 +19,12 @@ app_ui <- function(request) {
         mod_data_ui(id = "data")
       ),
       bslib::nav_panel(
-        title = "Visualization",
+        title = "Data overview",
         mod_visualization_ui(id = "viz")
       ),
       bslib::nav_panel(
         title = "Batch correction",
-        shiny::p("Here several batch correction options will be shown.")
+        mod_batch_correction_ui(id = "bc")
       ),
       bslib::nav_spacer(),
       bslib::nav_menu(
