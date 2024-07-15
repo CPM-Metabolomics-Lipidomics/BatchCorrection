@@ -22,7 +22,7 @@ attachment::att_amend_desc()
 ## Create a module infrastructure in R/
 golem::add_module(name = "data", with_test = TRUE) # data import module
 golem::add_module(name = "visualization", with_test = TRUE) # visualization module
-golem::add_module(name = "batch_correction", with_test = TRUE) # visualization module
+golem::add_module(name = "batch_correction", with_test = TRUE) # batch correction module
 golem::add_module(name = "help", with_test = FALSE) # visualization module
 golem::add_module(name = "about", with_test = FALSE) # visualization module
 # golem::add_module(name = "name_of_module2", with_test = TRUE) # Name of the module
@@ -31,6 +31,7 @@ golem::add_module(name = "about", with_test = FALSE) # visualization module
 ## Creates fct_* and utils_*
 golem::add_fct("data", with_test = TRUE) # functions for data module
 golem::add_fct("visualization", with_test = TRUE) # functions for visualization module
+golem::add_fct("batch_correction", with_test = TRUE) # functions for batch correction module
 # golem::add_utils("helpers", with_test = TRUE)
 
 ## External resources
