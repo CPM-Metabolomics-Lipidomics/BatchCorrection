@@ -8,12 +8,17 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
+#' @importFrom bsicons bs_icon
+#' @importFrom utils write.csv
 mod_batch_correction_ui <- function(id){
   ns <- NS(id)
+
   tagList(
     bslib::page_sidebar(
       sidebar = bslib::sidebar(
-        title = "Batch correction",
+        title = shiny::uiOutput(
+          outputId = ns("bc_download_ui")
+        ),
         shiny::selectInput(
           inputId = ns("bc_select_method"),
           label = "Select method",
@@ -235,7 +240,7 @@ mod_batch_correction_server <- function(id, r){
       }
     })
 
-
+    #---------------------------------------------------------------- plots ----
     output$bc_trend_plot <- shiny::renderPlot({
       shiny::req(r$tables$meta_data,
                  r$tables$bc_data,
@@ -343,6 +348,37 @@ mod_batch_correction_server <- function(id, r){
                sampleid_raw_col = r$indices$raw_id_col,
                batch_col = r$indices$meta_batch_col)
     })
+
+    #------------------------------------------------------------- download ----
+    output$bc_download_ui <- shiny::renderUI({
+      shiny::tagList(
+        bslib::popover(
+          bsicons::bs_icon(name = "cloud-download-fill"),
+          if(!is.null(r$tables$bc_data)) {
+            shiny::downloadButton(
+              outputId = ns("bc_download"),
+              label = "Download results"
+            )
+          } else {
+            shiny::p("No download yet!")
+          }
+        )
+      )
+    })
+
+
+    output$bc_download <- shiny::downloadHandler(
+      filename = function() {
+        "batch_correction_results.csv"
+      },
+      content = function(file) {
+        if(!is.null(r$tables$bc_data)) {
+          write.csv(r$tables$bc_data,
+                    file = file,
+                    row.names = FALSE)
+        }
+      }
+    )
 
   })
 }
