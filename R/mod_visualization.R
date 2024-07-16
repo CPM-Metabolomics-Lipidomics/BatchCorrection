@@ -50,29 +50,28 @@ mod_visualization_ui <- function(id){
       ),
       bslib::nav_panel(
         title = "PCA",
-        bslib::page_sidebar(
-          sidebar = bslib::sidebar(
-            open = FALSE,
-            shiny::selectInput(
-              inputId = ns("viz_pca_x"),
-              label = "x-axis",
-              choices = paste0("PC", 1:4),
-              selected = "PC1"
+        bslib::card(
+          bslib::page_sidebar(
+            sidebar = bslib::sidebar(
+              open = FALSE,
+              shiny::selectInput(
+                inputId = ns("viz_pca_x"),
+                label = "x-axis",
+                choices = paste0("PC", 1:4),
+                selected = "PC1"
+              ),
+              shiny::selectInput(
+                inputId = ns("viz_pca_y"),
+                label = "y-axis",
+                choices = paste0("PC", 1:4),
+                selected = "PC2"
+              )
             ),
-            shiny::selectInput(
-              inputId = ns("viz_pca_y"),
-              label = "y-axis",
-              choices = paste0("PC", 1:4),
-              selected = "PC2"
-            )
-          ),
-          bslib::card(
             shiny::plotOutput(
               outputId = ns("viz_pca_plot")
             )
           )
         )
-
       ),
       bslib::nav_panel(
         title = "Relative log expression",
