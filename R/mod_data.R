@@ -20,46 +20,50 @@ mod_data_ui <- function(id){
         bslib::card(
           bslib::page_sidebar(
             sidebar = bslib::sidebar(
-              shiny::h4("Column selection"),
-              shiny::selectInput(
-                inputId = ns("metadata_select_sampleid"),
-                label = "Sample ID",
-                choices = NULL
-              ),
-              shiny::selectInput(
-                inputId = ns("metadata_select_sampletype"),
-                label = "Sample type",
-                choices = NULL
-              ),
-              shiny::selectInput(
-                inputId = ns("metadata_select_acqorder"),
-                label = "Acquisition order",
-                choices = NULL
-              ),
-              shiny::selectInput(
-                inputId = ns("metadata_select_batch"),
-                label = "Batch",
-                choices = NULL
-              ),
-              shiny::h4("Text patterns"),
-              shiny::textInput(
-                inputId = ns("metadata_blank_pattern"),
-                label = "Blank",
-                value = "^blank",
-                width = "100%"
-              ),
-              shiny::textInput(
-                inputId = ns("metadata_qc_pattern"),
-                label = "QCpool",
-                value = "^pool",
-                width = "100%"
-              ),
-              shiny::textInput(
-                inputId = ns("metadata_sample_pattern"),
-                label = "Sample",
-                value = "^sample",
-                width = "100%"
+              shiny::div(
+                shiny::h4("Column selection"),
+                shiny::selectInput(
+                  inputId = ns("metadata_select_sampleid"),
+                  label = "Sample ID",
+                  choices = NULL
+                ),
+                shiny::selectInput(
+                  inputId = ns("metadata_select_sampletype"),
+                  label = "Sample type",
+                  choices = NULL
+                ),
+                shiny::selectInput(
+                  inputId = ns("metadata_select_acqorder"),
+                  label = "Acquisition order",
+                  choices = NULL
+                ),
+                shiny::selectInput(
+                  inputId = ns("metadata_select_batch"),
+                  label = "Batch",
+                  choices = NULL
+                ),
+                shiny::h4("Text patterns"),
+                shiny::textInput(
+                  inputId = ns("metadata_blank_pattern"),
+                  label = "Blank",
+                  value = "^blank",
+                  width = "100%"
+                ),
+                shiny::textInput(
+                  inputId = ns("metadata_qc_pattern"),
+                  label = "QCpool",
+                  value = "^pool",
+                  width = "100%"
+                ),
+                shiny::textInput(
+                  inputId = ns("metadata_sample_pattern"),
+                  label = "Sample",
+                  value = "^sample",
+                  width = "100%"
+                ),
+                style = "font-size:85%"
               )
+
             ),
             shiny::fileInput(
               inputId = ns("metadata_file"),
@@ -67,14 +71,17 @@ mod_data_ui <- function(id){
               multiple = FALSE,
               accept = c(".csv", ".tsv", ".txt", ".xlsx")
             ),
-            bslib::layout_column_wrap(
-              width = 1 / 2,
+            bslib::card_body(
               shiny::div(
                 DT::dataTableOutput(
                   outputId = ns("metadata_preview_table")
                 ),
                 style = "font-size:75%;"
               ),
+              height = "40%"
+            ),
+            bslib::card_body(
+              height = "60%",
               shiny::plotOutput(
                 outputId = ns("metadata_sampletype_plot")
               )
@@ -99,14 +106,37 @@ mod_data_ui <- function(id){
               )
             ),
             bslib::card_body(
+              height = "20%",
               bslib::layout_column_wrap(
-                width = 1 / 3,
+                width = 1 / 2,
                 shiny::fileInput(
                   inputId = ns("rawdata_file"),
                   label = "Data file:",
                   multiple = FALSE,
                   accept = c(".csv", ".tsv", ".txt", ".xlsx")
                 ),
+                shiny::selectInput(
+                  inputId = ns("raw_select_table"),
+                  label = "Select table",
+                  choices = c("Raw table" = "raw_data",
+                              "Filtered table" = "clean_data"),
+                  selected = "clean_data"
+                )
+              )
+            ),
+            bslib::card_body(
+              height = "65%",
+              shiny::div(
+                DT::dataTableOutput(
+                  outputId = ns("rawdata_preview_table")
+                ),
+                style = "font-size:75%;"
+              )
+            ),
+            bslib::card_body(
+              bslib::layout_column_wrap(
+                width = 1 / 2,
+                height = "15%",
                 shinyWidgets::progressBar(
                   id = ns("row_count_bar"),
                   title = "Row count",
@@ -121,21 +151,6 @@ mod_data_ui <- function(id){
                   total = 100,
                   unit_mark = "%"
                 )
-              )
-            ),
-            bslib::card_body(
-              shiny::div(
-                shiny::selectInput(
-                  inputId = ns("raw_select_table"),
-                  label = "Select table",
-                  choices = c("Raw table" = "raw_data",
-                              "Filtered table" = "clean_data"),
-                  selected = "clean_data"
-                ),
-                DT::dataTableOutput(
-                  outputId = ns("rawdata_preview_table")
-                ),
-                style = "font-size:75%;"
               )
             )
           )
@@ -346,7 +361,9 @@ mod_data_server <- function(id, r){
       data_table <- r$tables[[input$raw_select_table]]
 
       DT::datatable(data = data_table,
-                    options = list(paging = TRUE))
+                    rownames = FALSE,
+                    options = list(dom = "t",
+                                   pageLength = -1))
     })
 
 
@@ -356,7 +373,9 @@ mod_data_server <- function(id, r){
       data_table <- r$tables$meta_data
 
       DT::datatable(data = data_table,
-                    options = list(paging = TRUE))
+                    rownames = FALSE,
+                    options = list(dom = "t",
+                                   pageLength = -1))
     })
 
 
@@ -398,7 +417,7 @@ mod_data_server <- function(id, r){
                               title = "Type distribution, patterns applied ")
 
       patchwork::wrap_plots(p1, p2,
-                            ncol = 1)
+                            ncol = 2)
     })
   })
 }
