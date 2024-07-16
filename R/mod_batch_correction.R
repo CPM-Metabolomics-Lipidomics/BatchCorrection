@@ -393,7 +393,7 @@ mod_batch_correction_server <- function(id, r){
 
     output$bc_download <- shiny::downloadHandler(
       filename = function() {
-        "batch_correction_results.csv"
+        paste0("batch_correction_results_", input$bc_select_method, ".csv")
       },
       content = function(file) {
         if(!is.null(r$tables$bc_data)) {
