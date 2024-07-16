@@ -147,8 +147,6 @@ loess_bc <- function(data = NULL,
   method <- match.arg(arg = method,
                       choices = c("batch", "over_all"))
 
-  print(method)
-
   feature_names <- colnames(data)[-1]
 
   data <- merge(
@@ -204,4 +202,69 @@ loess_bc <- function(data = NULL,
 
 
   return(cor_data[, c(sampleid_raw_col, feature_names)])
+}
+
+
+#' @title Perform ComBat batch correction
+#'
+#' @description
+#' Perform ComBat batch correction from the SVA package.
+#'
+#' @param data data.frame in wide format.
+#' @param meta_data data.frame with the meta data.
+#' @param sampleid_raw_col character(1), name of the sample id column in the raw data.
+#' @param sampleid_meta_col character(1), name of the sample id column in the meta data.
+#' @param id_samples character() vector with the names of the sample samples id's.
+#' @param id_qcpool character() vector with the names of the pooled sample id's.
+#' @param batch_col character(1), name of the batch column.
+#'
+#' @return data.frame with combat batch corrected data.
+#'
+#' @author Rico Derks
+#'
+#' @importFrom sva ComBat
+#' @importFrom stats model.matrix
+#'
+#' @noRd
+combat_bc <- function(data = NULL,
+                      meta_data = NULL,
+                      sampleid_raw_col = NULL,
+                      sampleid_meta_col = NULL,
+                      id_samples = NULL,
+                      id_qcpool = NULL,
+                      batch_col = NULL) {
+  feature_names <- colnames(data)[-1]
+
+  data <- merge(
+    x = data,
+    y = meta_data,
+    by.x = sampleid_raw_col,
+    by.y = sampleid_meta_col,
+    all.x = TRUE
+  )
+
+  # sort the columns
+  other_columns <- colnames(data)[!(colnames(data) %in% feature_names)]
+  data <- data[data[, sampleid_raw_col] %in% c(id_qcpool, id_samples), c(other_columns, feature_names)]
+
+  data[, batch_col] <- factor(data[, batch_col])
+  batches <- data[, batch_col]
+
+  anno <- data[, other_columns]
+  modcombat <- model.matrix(~1, data = anno)
+
+  cor_data <- ComBat(dat = t(as.matrix(data[, feature_names])),
+                     batch = batches,
+                     mod = modcombat,
+                     par.prior = TRUE,
+                     prior.plots = FALSE)
+
+  cor_data <- as.data.frame(t(cor_data))
+  cor_data <- cbind(
+    data[, sampleid_raw_col],
+    cor_data
+  )
+  colnames(cor_data)[1] <- sampleid_raw_col
+
+  return(cor_data)
 }

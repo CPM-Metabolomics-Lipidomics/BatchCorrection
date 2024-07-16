@@ -10,6 +10,8 @@
 #' @importFrom shiny NS tagList
 #' @importFrom shinyWidgets progressBar updateProgressBar
 #' @importFrom DT dataTableOutput
+#' @importFrom bsicons bs_icon
+#' @importFrom bslib navset_card_tab nav_panel card card_body page_sidebar sidebar
 #'
 mod_data_ui <- function(id){
   ns <- shiny::NS(id)
@@ -45,19 +47,37 @@ mod_data_ui <- function(id){
                 shiny::h4("Text patterns"),
                 shiny::textInput(
                   inputId = ns("metadata_blank_pattern"),
-                  label = "Blank",
+                  label = bslib::tooltip(
+                    trigger = list(
+                      "Blanks",
+                      bsicons::bs_icon(name = "info-circle")
+                    ),
+                    "Regular expression to recognize blank samples."
+                  ),
                   value = "^blank",
                   width = "100%"
                 ),
                 shiny::textInput(
                   inputId = ns("metadata_qc_pattern"),
-                  label = "QCpool",
+                  label = bslib::tooltip(
+                    trigger = list(
+                      "Pooled samples",
+                      bsicons::bs_icon(name = "info-circle")
+                    ),
+                    "Regular expression to recognize pooled samples."
+                  ),
                   value = "^pool",
                   width = "100%"
                 ),
                 shiny::textInput(
                   inputId = ns("metadata_sample_pattern"),
-                  label = "Sample",
+                  label = bslib::tooltip(
+                    trigger = list(
+                      "Samples",
+                      bsicons::bs_icon(name = "info-circle")
+                    ),
+                    "Regular expression to recognize samples."
+                  ),
                   value = "^sample",
                   width = "100%"
                 ),
@@ -98,7 +118,14 @@ mod_data_ui <- function(id){
               open = FALSE,
               shiny::numericInput(
                 inputId = ns("raw_missing"),
-                label = "Max. missing values [%]",
+                label = bslib::tooltip(
+                  trigger = list(
+                    "Max. missing values [%]",
+                    bsicons::bs_icon(name = "info-circle")
+                  ),
+                  "Maximum relative amount [%] of missing values per feature.
+                  If a feature has more missing values it will be removed"
+                ),
                 value = 50,
                 min = 0,
                 max = 100,

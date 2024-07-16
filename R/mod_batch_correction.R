@@ -120,6 +120,10 @@ mod_batch_correction_server <- function(id, r){
     ns <- session$ns
 
     shiny::observeEvent(input$bc_select_method, {
+      r$tables$bc_data <- NULL
+      output$bc_status_text <- shiny::renderUI({
+        NULL
+      })
 
       if(input$bc_select_method == "loess") {
         output$bc_options_ui <- shiny::renderUI({
@@ -150,9 +154,9 @@ mod_batch_correction_server <- function(id, r){
 
 
     shiny::observeEvent(input$bc_apply_method, {
-      shiny::req(input$bc_select_method,
-                 r$tables$clean_data,
-                 r$tables$meta_data)
+      shiny::req(r$tables$clean_data,
+                 r$tables$meta_data,
+                 input$bc_select_method)
 
       output$bc_status_text <- shiny::renderUI({
         NULL
@@ -182,10 +186,30 @@ mod_batch_correction_server <- function(id, r){
                                        order_col = r$indices$meta_acqorder_col,
                                        span = input$bc_loess_span,
                                        method = input$bc_loess_batch)
+        },
+        "combat" = {
+          r$tables$bc_data <- combat_bc(data = r$tables$clean_data,
+                                        meta_data = r$tables$meta_data,
+                                        sampleid_raw_col = r$indices$raw_id_col,
+                                        sampleid_meta_col = r$indices$meta_id_col,
+                                        id_samples = r$indices$id_samples,
+                                        id_qcpool = r$indices$id_qcpool,
+                                        batch_col = r$indices$meta_batch_col)
         }
       )
 
       if(!is.null(r$tables$bc_data)) {
+        # Changes status update while just selecting from median -> loess
+        output$bc_status_text <- shiny::renderUI({
+          bc_method <- switch(
+            input$bc_select_method,
+            "median" = "Median batch correction applied.",
+            "loess" = "LOESS batch correction applied.",
+            "combat" = "ComBat batch correction applied."
+          )
+          shiny::p(bc_method)
+        })
+
         print("Calculating...")
         print("  * trend plot")
         r$data_bc$trend <- prepare_trend_data(data = r$tables$bc_data,
