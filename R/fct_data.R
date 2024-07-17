@@ -545,3 +545,71 @@ prepare_rle_data <- function(data = NULL,
 
   return(data_long)
 }
+
+
+#' @title Prepare data for a missing values plot
+#'
+#' @description
+#' Prepare data for a missing values plot.
+#'
+#' @param data data.frame in wide format.
+#' @param meta_data data.frame with the meta data.
+#' @param sampleid_raw_col character(1), name of the sample id column in the raw data.
+#' @param sampleid_meta_col character(1), name of the sample id column in the meta data.
+#' @param sample_ids character() vector with the names of the samples id's which should be selected for the plot.
+#'
+#' @return data.frame
+#'
+#' @author Rico Derks
+#'
+#' @importFrom tidyr pivot_longer matches
+#'
+#' @noRd
+prepare_missing_data <- function(data = NULL,
+                                 meta_data = NULL,
+                                 sampleid_raw_col = NULL,
+                                 sampleid_meta_col = NULL,
+                                 sample_ids = NULL) {
+
+  feature_names <- colnames(data)[-1]
+
+  data <- merge(
+    x = data,
+    y = meta_data,
+    by.x = sampleid_raw_col,
+    by.y = sampleid_meta_col,
+    all.x = TRUE
+  )
+
+  # sort the columns
+  other_columns <- colnames(data)[!(colnames(data) %in% feature_names)]
+  data <- data[, c(other_columns, feature_names)]
+  data <- data[data[, sampleid_raw_col] %in% sample_ids, ]
+
+  data_long <- data |>
+    tidyr::pivot_longer(
+      cols = !tidyr::contains(other_columns),
+      names_to = "featureNames",
+      values_to = "value"
+    )
+
+  data_long$missing <- is.na(data_long$value)
+  data_long$total <- length(sample_ids)
+
+  data_long <- as.data.frame(tapply(data_long, list(data_long$featureNames, data_long$missing, data_long$total), function(x) {
+    nrow(x)
+  }))
+  data_long$featureNames <- rownames(data_long)
+  colnames(data_long)[1:2] <- c("FALSE", "TRUE")
+
+  data_long <- data_long |>
+    tidyr::pivot_longer(
+      cols = tidyr::contains(c("FALSE", "TRUE")),
+      names_to = "missing",
+      values_to = "num_missing"
+    )
+  data_long$total <- length(sample_ids)
+  data_long$proportion <- data_long$num_missing / data_long$total
+
+  return(data_long)
+}

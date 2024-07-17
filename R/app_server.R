@@ -44,7 +44,8 @@ app_server <- function(input, output, session) {
       histogram = NULL,
       pca = NULL,
       heatmap = NULL,
-      rle = NULL
+      rle = NULL,
+      missing = NULL
     ),
     # after correction
     data_bc = list(

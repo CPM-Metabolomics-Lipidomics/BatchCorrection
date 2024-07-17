@@ -204,7 +204,7 @@ pca_loadings_plot <- function(data = NULL,
 #' @description
 #' Histogram plot.
 #'
-#' @param data list from output of prepare_pca_data().
+#' @param data list from output of prepare_histogram_data().
 #'
 #' @return ggplot2 object
 #'
@@ -248,7 +248,7 @@ histogram_plot <- function(data = NULL) {
 #' @description
 #' Relative log expression plot.
 #'
-#' @param data list from output of prepare_pca_data().
+#' @param data data.frame from output of prepare_rle_data().
 #' @param sampleid_raw_col character(1), name of the sample id column in the raw data.
 #' @param batch_col character(1), name of the batch column in the meta data.
 #'
@@ -278,6 +278,42 @@ rle_plot <- function(data = NULL,
                                                        hjust = 1,
                                                        size = 5),
                    legend.position = "bottom")
+
+  return(p)
+}
+
+
+#' @title Missing values plot
+#'
+#' @description
+#' Missing values plot.
+#'
+#' @param data data.frame from output of prepare_missing_data().
+#' @param title character(1), title of the plot.
+#'
+#' @return ggplot2 object.
+#'
+#' @author Rico Derks
+#'
+#' @importFrom ggplot2 ggplot aes .data geom_col theme_minimal labs
+#'     scale_fill_manual coord_flip
+#'
+#' @noRd
+missing_plot <- function(data = NULL,
+                         title = NULL) {
+  p <- data |>
+    ggplot2::ggplot(ggplot2::aes(x = .data$featureNames,
+                                 y = .data$proportion,
+                                 fill = .data$missing)) +
+    ggplot2::geom_col(width = 1) +
+    ggplot2::scale_fill_manual(name = "",
+                               values = c('steelblue', 'tomato3'),
+                               labels = c("Present", "Missing")) +
+    ggplot2::coord_flip() +
+    ggplot2::labs(y = "Proportion missing",
+                  x = "Feature names",
+                  title = title) +
+    ggplot2::theme_minimal()
 
   return(p)
 }

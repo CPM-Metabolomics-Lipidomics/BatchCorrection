@@ -14,6 +14,26 @@ mod_visualization_ui <- function(id){
   tagList(
     bslib::navset_card_tab(
       bslib::nav_panel(
+        title = "Missing values",
+        bslib::card(
+          bslib::page_sidebar(
+            sidebar = bslib::sidebar(
+              open = FALSE,
+              shiny::selectInput(
+                inputId = ns("viz_missing_view_select"),
+                label = "Show",
+                choices = c("Pooled samples / samples" = "all",
+                            "Pooled samples" = "pooled"),
+                selected = "all"
+              )
+            ),
+            shiny::plotOutput(
+              outputId = ns("viz_missing")
+            )
+          )
+        )
+      ),
+      bslib::nav_panel(
         title = "Histogram",
         bslib::card(
           shiny::plotOutput(
@@ -93,6 +113,25 @@ mod_visualization_ui <- function(id){
 mod_visualization_server <- function(id, r){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
+
+    output$viz_missing <- shiny::renderPlot({
+      shiny::req(r$tables$meta_data,
+                 r$tables$clean_data,
+                 r$data$trend,
+                 r$indices$raw_id_col,
+                 r$indices$meta_id_col,
+                 r$indices$meta_acqorder_col,
+                 r$indices$meta_batch_col,
+                 r$indices$id_qcpool,
+                 input$viz_missing_view_select)
+      print("Show missing values plot")
+      title <- switch(input$viz_missing_view_select,
+                      "all" = "Samples / pooled samples",
+                      "pooled" = "Pooled samples")
+      missing_plot(data = r$data$missing,
+                   title = title)
+    })
+
 
     output$viz_trend_plot <- shiny::renderPlot({
       shiny::req(r$tables$meta_data,
@@ -200,6 +239,34 @@ mod_visualization_server <- function(id, r){
       rle_plot(data = r$data$rle,
                sampleid_raw_col = r$indices$raw_id_col,
                batch_col = r$indices$meta_batch_col)
+    })
+
+
+    observeEvent(input$viz_missing_view_select, {
+      shiny::req(
+        r$tables$clean_data,
+        r$tables$meta_data,
+        r$indices$raw_id_col,
+        r$indices$meta_id_col,
+        r$indices$id_qcpool,
+        r$indices$id_samples
+      )
+
+      print("Calculating...")
+      print("  * Missing values plot")
+      if(input$viz_missing_view_select == "all") {
+        r$data$missing <- prepare_missing_data(data = r$tables$clean_data,
+                                               meta_data = r$tables$meta_data,
+                                               sampleid_raw_col = r$indices$raw_id_col,
+                                               sampleid_meta_col = r$indices$meta_id_col,
+                                               sample_ids = c(r$indices$id_qcpool, r$indices$id_samples))
+      } else {
+        r$data$missing <- prepare_missing_data(data = r$tables$clean_data,
+                                               meta_data = r$tables$meta_data,
+                                               sampleid_raw_col = r$indices$raw_id_col,
+                                               sampleid_meta_col = r$indices$meta_id_col,
+                                               sample_ids = r$indices$id_qcpool)
+      }
     })
   })
 }

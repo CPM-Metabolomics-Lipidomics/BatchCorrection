@@ -311,7 +311,7 @@ mod_data_server <- function(id, r){
                                                    ignore.case = TRUE), input$metadata_select_sampleid]
 
           raw_missing <- input$raw_missing / 100
-          keep_features <- apply(r$tables$raw_data, 2, function(x) {
+          keep_features <- apply(r$tables$raw_data[r$tables$raw_data[, r$indices$raw_id_col] %in% c(r$indices$id_qcpool, r$indices$id_samples), ], 2, function(x) {
             mean(is.na(x)) <= raw_missing
           })
           r$tables$clean_data <-
@@ -334,6 +334,13 @@ mod_data_server <- function(id, r){
           )
 
           print("Calculating...")
+          print("  * Missing values plot")
+          r$data$missing <- prepare_missing_data(data = r$tables$clean_data,
+                                                 meta_data = r$tables$meta_data,
+                                                 sampleid_raw_col = r$indices$raw_id_col,
+                                                 sampleid_meta_col = r$indices$meta_id_col,
+                                                 sample_ids = c(r$indices$id_qcpool, r$indices$id_samples))
+
           print("  * trend plot")
           r$data$trend <- prepare_trend_data(data = r$tables$clean_data,
                                              meta_data = r$tables$meta_data,
