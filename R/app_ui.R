@@ -5,12 +5,16 @@
 #'
 #' @rawNamespace import(shiny, except = c(dataTableOutput, renderDataTable))
 #'
+#' @importFrom waiter autoWaiter spin_loader
+#'
 #' @noRd
 #'
 app_ui <- function(request) {
   tagList(
     golem_add_external_resources(),
 
+    waiter::autoWaiter(html = waiter::spin_loader(),
+                       color = NA),
     bslib::page_navbar(
       title = paste0("CPM - BatchCorrection | v", utils::packageVersion("BatchCorrection")),
       underline = TRUE,

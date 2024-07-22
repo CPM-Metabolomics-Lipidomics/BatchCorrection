@@ -1,6 +1,6 @@
 Package: BatchCorrection
 Title: This is a Shiny app to check for possible batch effects
-Version: 0.0.0.9023
+Version: 0.0.0.9024
 Authors@R: 
     person("Rico", "Derks", , "r.j.e.derks@lumc.nl", role = c("cre", "aut"))
 Description: This is a Shiny app to check for possible batch effects. In
@@ -29,7 +29,8 @@ Imports:
     stringr,
     sva,
     tidyr,
-    utils
+    utils,
+    waiter
 Suggests: 
     spelling,
     testthat (>= 3.0.0)
