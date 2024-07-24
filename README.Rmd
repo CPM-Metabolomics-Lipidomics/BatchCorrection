@@ -26,9 +26,5 @@ The goal of `BatchCorrection` is to check if there are possible batch effects in
 You can install the development version of BatchCorrection like so:
 
 ``` r
-remotes::install_github("ricoderks/BatchCorrection")
+remotes::install_github("CPM-Metabolomics-Lipidomics/BatchCorrection")
 ```
-
-## Example
-
-This is a basic example which shows you how to solve a common problem:

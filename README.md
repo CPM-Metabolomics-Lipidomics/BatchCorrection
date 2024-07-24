@@ -4,6 +4,9 @@
 # BatchCorrection
 
 <!-- badges: start -->
+
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
 The goal of `BatchCorrection` is to check if there are possible batch
@@ -15,9 +18,5 @@ batch correction techniques.
 You can install the development version of BatchCorrection like so:
 
 ``` r
-remotes::install_github("ricoderks/BatchCorrection")
+remotes::install_github("CPM-Metabolomics-Lipidomics/BatchCorrection")
 ```
-
-## Example
-
-This is a basic example which shows you how to solve a common problem:
