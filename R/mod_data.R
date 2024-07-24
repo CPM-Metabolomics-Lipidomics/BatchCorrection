@@ -208,6 +208,9 @@ mod_data_server <- function(id, r){
       print("Raw data read")
 
       r$indices$raw_id_col <- colnames(r$tables$raw_data)[1]
+
+      r$bc_applied <- "none"
+      r$tables$bc_data <- NULL
     })
 
 
@@ -271,6 +274,9 @@ mod_data_server <- function(id, r){
                           column_names[1])
       )
 
+      r$bc_applied <- "none"
+      r$tables$bc_data <- NULL
+
     })
 
 
@@ -292,6 +298,9 @@ mod_data_server <- function(id, r){
                      input$metadata_blank_pattern,
                      input$metadata_qc_pattern,
                      input$metadata_sample_pattern)
+
+          r$bc_applied <- "none"
+          r$tables$bc_data <- NULL
 
           r$indices$meta_id_col <- input$metadata_select_sampleid
           r$indices$meta_type_col <- input$metadata_select_sampletype
