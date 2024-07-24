@@ -28,3 +28,11 @@ You can install the development version of BatchCorrection like so:
 ``` r
 remotes::install_github("CPM-Metabolomics-Lipidomics/BatchCorrection")
 ```
+
+## Run
+
+You can run the app with:
+
+``` r
+BatchCorrection::run_app()
+```
