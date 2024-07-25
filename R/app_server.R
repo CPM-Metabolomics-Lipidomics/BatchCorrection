@@ -16,6 +16,7 @@ app_server <- function(input, output, session) {
     data_file = NA,
 
     bc_applied = "none",
+    bc_status_text = NA,
 
     #-------------------------------------------------------------- indices ----
     indices = list(

@@ -121,9 +121,10 @@ mod_batch_correction_server <- function(id, r){
 
     shiny::observeEvent(input$bc_select_method, {
       r$tables$bc_data <- NULL
-      output$bc_status_text <- shiny::renderUI({
-        NULL
-      })
+      r$bc_status_text <- NULL
+      # output$bc_status_text <- shiny::renderUI({
+      #   NULL
+      # })
 
       if(input$bc_select_method == "loess") {
         output$bc_options_ui <- shiny::renderUI({
@@ -159,10 +160,7 @@ mod_batch_correction_server <- function(id, r){
                  input$bc_select_method,
                  r$bc_applied)
 
-      output$bc_status_text <- shiny::renderUI({
-        NULL
-      })
-
+      r$bc_status_text <- input$bc_select_method
       switch(
         input$bc_select_method,
         "median" = {
@@ -201,17 +199,6 @@ mod_batch_correction_server <- function(id, r){
 
       if(!is.null(r$tables$bc_data)) {
         r$bc_applied <- input$bc_select_method
-
-        # Changes status update while just selecting from median -> loess
-        output$bc_status_text <- shiny::renderUI({
-          bc_method <- switch(
-            input$bc_select_method,
-            "median" = "Median batch correction applied.",
-            "loess" = "LOESS batch correction applied.",
-            "combat" = "ComBat batch correction applied."
-          )
-          shiny::p(bc_method)
-        })
 
         print("Calculating...")
         print("  * trend plot")
@@ -260,36 +247,26 @@ mod_batch_correction_server <- function(id, r){
 
         print("...done!")
       } else {
-        output$bc_status_text <- shiny::renderUI({
-          shiny::p(shiny::span("Error: there are missing values in the pooled samples.",
-                               style = "color:red;"),
-                   "Please select a different batch correction method or remove the missing values!")
-
-          r$bc_applied <- "none"
-        })
+        print("error")
+        r$bc_status_text <- "Error: there are missing values in the pooled samples. Please select a different batch correction method or remove the missing values!"
+        r$bc_applied <- "none"
       }
     })
 
 
-    # Changes status update while just selecting from median -> loess
     output$bc_status_text <- shiny::renderUI({
-      shiny::req(input$bc_select_method,
-                 !is.null(r$tables$bc_data),
-                 r$bc_applied)
-
-      print("Rico")
-      print(r$bc_applied)
+      shiny::req(r$bc_status_text)
 
       if(!is.null(r$tables$bc_data)) {
         bc_method <- switch(
-          input$bc_select_method,
+          r$bc_status_text,
           "median" = "Median batch correction applied.",
           "loess" = "LOESS batch correction applied.",
           "combat" = "ComBat batch correction applied."
         )
         shiny::p(bc_method)
       } else {
-        NULL
+        shiny::p(r$bc_status_text)
       }
     })
     #---------------------------------------------------------------- plots ----
