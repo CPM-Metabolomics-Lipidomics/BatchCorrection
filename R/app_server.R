@@ -15,6 +15,8 @@ app_server <- function(input, output, session) {
     meta_file = NA,
     data_file = NA,
 
+    bc_applied = "none",
+
     #-------------------------------------------------------------- indices ----
     indices = list(
       meta_id_col = NULL,
