@@ -391,6 +391,7 @@ mod_batch_correction_server <- function(id, r){
 
     output$bc_rle_plot <- shiny::renderPlot({
       shiny::req(r$data_bc$rle,
+                 r$tables$bc_data,
                  r$indices$raw_id_col,
                  r$indices$meta_batch_col)
 
