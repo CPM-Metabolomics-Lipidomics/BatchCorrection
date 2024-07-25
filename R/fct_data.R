@@ -571,7 +571,7 @@ prepare_rle_data <- function(data = NULL,
 #'
 #' @importFrom tidyr pivot_longer matches
 #'
-#' @noRd
+#' @export
 prepare_missing_data <- function(data = NULL,
                                  meta_data = NULL,
                                  sampleid_raw_col = NULL,

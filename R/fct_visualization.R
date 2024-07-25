@@ -16,7 +16,7 @@
 #' @importFrom ggplot2 ggplot aes geom_point geom_line theme_minimal labs
 #'   geom_hline guides guide_legend theme element_text
 #'
-#' @noRd
+#' @export
 trend_plot <- function(data = NULL,
                        sampleid_raw_col = NULL,
                        batch_col = NULL,
@@ -99,7 +99,7 @@ simple_ellipse <- function(x, y, alpha = 0.95, len = 200) {
 #'   element_text labs
 #' @importFrom patchwork plot_spacer plot_layout
 #'
-#' @noRd
+#' @export
 pca_scores_plot <- function(data = NULL,
                             sampletype_col = NULL,
                             batch_col = NULL,
@@ -179,7 +179,7 @@ pca_scores_plot <- function(data = NULL,
 #' @importFrom ggplot2 ggplot aes geom_hline geom_vline .data
 #'   geom_point  theme_minimal theme labs
 #'
-#' @noRd
+#' @export
 pca_loadings_plot <- function(data = NULL,
                               xaxis = "PC1",
                               yaxis = "PC2") {
@@ -214,7 +214,7 @@ pca_loadings_plot <- function(data = NULL,
 #'   theme_minimal theme labs facet_wrap
 #' @importFrom patchwork wrap_plots
 #'
-#' @noRd
+#' @export
 histogram_plot <- function(data = NULL) {
   p1 <- data$overall |>
     ggplot2::ggplot(ggplot2::aes(x = .data$rsd)) +
@@ -259,7 +259,7 @@ histogram_plot <- function(data = NULL) {
 #' @importFrom ggplot2 ggplot aes geom_hline .data geom_boxplot
 #'   theme_minimal theme labs guides guide_legend
 #'
-#' @noRd
+#' @export
 rle_plot <- function(data = NULL,
                      sampleid_raw_col = NULL,
                      batch_col = NULL) {
@@ -298,7 +298,7 @@ rle_plot <- function(data = NULL,
 #' @importFrom ggplot2 ggplot aes .data geom_col theme_minimal labs
 #'     scale_fill_manual coord_flip
 #'
-#' @noRd
+#' @export
 missing_plot <- function(data = NULL,
                          title = NULL) {
   p <- data |>

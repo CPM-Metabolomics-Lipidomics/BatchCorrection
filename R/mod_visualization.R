@@ -312,7 +312,12 @@ mod_visualization_server <- function(id, r){
                   overwrite = TRUE)
 
         params <- list(
-          data_missing = r$data$missing
+          clean_data = r$tables$clean_data,
+          meta_data = r$tables$meta_data,
+          sampleid_raw_col = r$indices$raw_id_col,
+          sampleid_meta_col = r$indices$meta_id_col,
+          sample_ids = r$indices$id_samples,
+          qcpool_ids = r$indices$id_qcpool
         )
 
         rmarkdown::render(input = temp_report,
