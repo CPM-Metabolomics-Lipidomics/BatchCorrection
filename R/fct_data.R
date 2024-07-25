@@ -509,6 +509,7 @@ prepare_rle_data <- function(data = NULL,
                              sampleid_raw_col = NULL,
                              sampleid_meta_col = NULL,
                              order_col = NULL,
+                             batch_col = NULL,
                              id_samples = NULL) {
   feature_names <- colnames(data)[-1]
 
@@ -537,7 +538,13 @@ prepare_rle_data <- function(data = NULL,
       values_to = "value"
     )
 
-  sample_order <- data[order(data[, order_col]), sampleid_raw_col]
+  # trying to sort the samples in more or less a measurement order when the order_col
+  # is empty in the meta data
+  if(all(is.na(data[, order_col]))) {
+    sample_order <- data[order(data[, batch_col], data[, sampleid_raw_col]), sampleid_raw_col]
+  } else {
+    sample_order <- data[order(data[, order_col]), sampleid_raw_col]
+  }
 
   data_long[, sampleid_raw_col] <- factor(x = data_long[, sampleid_raw_col, drop = TRUE],
                                           levels = sample_order,
