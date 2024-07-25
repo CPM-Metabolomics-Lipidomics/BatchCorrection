@@ -391,6 +391,7 @@ mod_data_server <- function(id, r){
                                          sampleid_raw_col = r$indices$raw_id_col,
                                          sampleid_meta_col = r$indices$meta_id_col,
                                          order_col = r$indices$meta_acqorder_col,
+                                         batch_col = r$indices$meta_batch_col,
                                          id_samples = r$indices$id_samples)
 
           print("...done!")
