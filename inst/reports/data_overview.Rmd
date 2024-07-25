@@ -5,18 +5,61 @@ output:
     toc: true
     toc_float: true
 params:
-  data_missing: NA
+  clean_data: NA
+  meta_data: NA
+  sampleid_raw_col: NA
+  sampleid_meta_col: NA
+  sample_ids: NA
+  qcpool_ids: NA
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 
-data_missing <- params$data_missing
+library(BatchCorrection)
+library(sessioninfo)
+
+clean_data <- params$clean_data
+meta_data <- params$meta_data
+sampleid_raw_col <- params$sampleid_raw_col
+sampleid_meta_col <- params$sampleid_meta_col
+sample_ids <- params$sample_ids
+qcpool_ids <- params$qcpool_ids
 ```
 
-# Missing data
+# Missing data {.tabset}
 
 ```{r}
-data_missing
+data_missing_all <- prepare_missing_data(data = clean_data,
+                                         meta_data = meta_data,
+                                         sampleid_raw_col = sampleid_raw_col,
+                                         sampleid_meta_col = sampleid_meta_col,
+                                         sample_ids = c(qcpool_ids, sample_ids))
+
+data_missing_pool <- prepare_missing_data(data = clean_data,
+                                          meta_data = meta_data,
+                                          sampleid_raw_col = sampleid_raw_col,
+                                          sampleid_meta_col = sampleid_meta_col,
+                                          sample_ids = qcpool_ids)
+```
+
+## Samples / pooled samples
+
+```{r fig.width=10, fig.height=16}
+missing_plot(data = data_missing_all,
+             title = "Samples / pooled samples")
+```
+
+## Pooled samples
+
+```{r fig.width=10, fig.height=16}
+missing_plot(data = data_missing_pool,
+             title = "Samples / pooled samples")
+```
+
+# Session info
+
+```{r}
+session_info()
 ```
 
