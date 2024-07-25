@@ -77,6 +77,7 @@ mod_help_ui <- function(id){
                  patterns, clusters, or outliers more evident. The loadings plot shows how each feature
                  contributes to the principal components. Here, principal component 1 - 4 can be used to evaluate if there
                  is a batch effect. The density plots around the scores plot assist to determine if there is a batch effect."),
+        shiny::p(shiny::strong("NOTE: "), "For the PCA features with more then 50% missing values are removed."),
         shiny::hr(width = "75%", style = "margin-left:12.5%;"),
         shiny::h3("Relative log expression"),
         shiny::p("Relative log expression (RLE) plots are a powerful tool for visualising unwanted variation in high dimensional data.
