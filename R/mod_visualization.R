@@ -100,6 +100,12 @@ mod_visualization_ui <- function(id){
             outputId = ns("viz_rle_plot")
           )
         )
+      ),
+      bslib::nav_spacer(),
+      bslib::nav_item(
+        shiny::uiOutput(
+          outputId = ns("viz_download_ui")
+        )
       )
     ) # end navset_card_tab
   )
@@ -268,5 +274,28 @@ mod_visualization_server <- function(id, r){
                                                sample_ids = r$indices$id_qcpool)
       }
     })
+
+
+    #------------------------------------------------------------- download ----
+    output$viz_download_ui <- shiny::renderUI({
+      shiny::req(r$data$missing,
+                 r$data$histogram,
+                 r$data$trend,
+                 r$data$heatmap,
+                 r$data$pca,
+                 r$data$rle)
+
+        shiny::tagList(
+          bslib::popover(
+            bsicons::bs_icon(name = "cloud-download-fill",
+                             size = "2em"),
+            shiny::downloadButton(
+              outputId = ns("viz_download_report"),
+              label = "Download overview report"
+            )
+          )
+        )
+    })
+
   })
 }

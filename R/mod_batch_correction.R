@@ -16,9 +16,6 @@ mod_batch_correction_ui <- function(id){
   tagList(
     bslib::page_sidebar(
       sidebar = bslib::sidebar(
-        title = shiny::uiOutput(
-          outputId = ns("bc_download_ui")
-        ),
         shiny::selectInput(
           inputId = ns("bc_select_method"),
           label = "Select method",
@@ -105,6 +102,12 @@ mod_batch_correction_ui <- function(id){
             shiny::plotOutput(
               outputId = ns("bc_rle_plot")
             )
+          )
+        ),
+        bslib::nav_spacer(),
+        bslib::nav_item(
+          shiny::uiOutput(
+            outputId = ns("bc_download_ui")
           )
         )
       ) # end navset_card_tab
@@ -381,17 +384,20 @@ mod_batch_correction_server <- function(id, r){
 
     #------------------------------------------------------------- download ----
     output$bc_download_ui <- shiny::renderUI({
+      shiny::req(r$tables$bc_data)
+
       shiny::tagList(
         bslib::popover(
-          bsicons::bs_icon(name = "cloud-download-fill"),
-          if(!is.null(r$tables$bc_data)) {
-            shiny::downloadButton(
-              outputId = ns("bc_download"),
-              label = "Download results"
-            )
-          } else {
-            shiny::p("No download yet!")
-          }
+          bsicons::bs_icon(name = "cloud-download-fill",
+                           size = "2em"),
+          shiny::downloadButton(
+            outputId = ns("bc_download"),
+            label = "Download results"
+          ),
+          shiny::downloadButton(
+            outputId = ns("bc_download_report"),
+            label = "Download report"
+          )
         )
       )
     })
