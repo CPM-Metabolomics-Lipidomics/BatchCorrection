@@ -1,0 +1,22 @@
+---
+title: "Data overview"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+params:
+  data_missing: NA
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+data_missing <- params$data_missing
+```
+
+# Missing data
+
+```{r}
+data_missing
+```
+

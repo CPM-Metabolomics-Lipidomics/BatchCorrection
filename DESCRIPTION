@@ -22,6 +22,7 @@ Imports:
     plotly,
     RColorBrewer,
     readxl,
+    rmarkdown,
     sessioninfo,
     shiny (>= 1.8.1.1),
     shinyWidgets,

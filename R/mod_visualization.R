@@ -9,6 +9,7 @@
 #'
 #' @importFrom shiny NS tagList
 #' @importFrom plotly plotlyOutput
+#' @importFrom rmarkdown render
 mod_visualization_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -296,6 +297,30 @@ mod_visualization_server <- function(id, r){
           )
         )
     })
+
+
+    output$viz_download_report <- shiny::downloadHandler(
+      filename = function() {
+        paste(Sys.Date(), "_data_overview.html", sep = "")
+      },
+      content = function(file) {
+        temp_report <- file.path(tempdir(), "data_overview.Rmd")
+        report_file <- system.file("reports", "data_overview.Rmd",
+                                   package = "BatchCorrection")
+        file.copy(from = report_file,
+                  to = temp_report,
+                  overwrite = TRUE)
+
+        params <- list(
+          data_missing = r$data$missing
+        )
+
+        rmarkdown::render(input = temp_report,
+                          output_file = file,
+                          params = params,
+                          envir = new.env(parent = globalenv()))
+      }
+    )
 
   })
 }
