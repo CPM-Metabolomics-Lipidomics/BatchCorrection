@@ -1,35 +1,84 @@
 ---
 title: "Data overview"
+data: "`r Sys.Date()`"
 output: 
   html_document:
     toc: true
     toc_float: true
 params:
+  data_file: NA
+  meta_file: NA
   clean_data: NA
   meta_data: NA
   sampleid_raw_col: NA
   sampleid_meta_col: NA
+  meta_type_col: NA
+  meta_acqorder_col: NA
+  meta_batch_col: NA
   sample_ids: NA
   qcpool_ids: NA
+  blank_ids: NA
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
 
+library(gt)
+library(ComplexHeatmap)
+library(patchwork)
 library(BatchCorrection)
 library(sessioninfo)
 
+data_file <- params$data_file
+meta_file <- params$meta_file
 clean_data <- params$clean_data
 meta_data <- params$meta_data
 sampleid_raw_col <- params$sampleid_raw_col
 sampleid_meta_col <- params$sampleid_meta_col
+meta_type_col <- params$meta_type_col
+meta_acqorder_col <- params$meta_acqorder_col
+meta_batch_col <- params$meta_batch_col
 sample_ids <- params$sample_ids
 qcpool_ids <- params$qcpool_ids
+blank_ids <- params$blank_ids
 ```
 
-# Missing data {.tabset}
+# Settings
 
-```{r}
+```{r data_settings}
+data.frame(
+  "Parameter" = c(
+    "Raw data file name",
+    "Meta data file name",
+    "Column name sample ID's (raw)", 
+    "Column name sample ID's (meta)", 
+    "Column name sample type",
+    "Column name batch",
+    "Column name acquisition order",
+    "Sample ID's", 
+    "Pooled sample ID's"),
+  "Value" = c(
+    data_file,
+    meta_file,
+    sampleid_raw_col,
+    sampleid_meta_col,
+    meta_type_col,
+    meta_batch_col,
+    meta_acqorder_col,
+    paste(sample_ids, collapse = ", "),
+    paste(qcpool_ids, collapse = ", ")
+  )
+) |> 
+  gt()
+```
+
+# Overview {.tabset}
+
+## Missing data {.tabset}
+
+```{r missing_calc}
 data_missing_all <- prepare_missing_data(data = clean_data,
                                          meta_data = meta_data,
                                          sampleid_raw_col = sampleid_raw_col,
@@ -43,23 +92,171 @@ data_missing_pool <- prepare_missing_data(data = clean_data,
                                           sample_ids = qcpool_ids)
 ```
 
-## Samples / pooled samples
+### Samples / pooled samples
 
-```{r fig.width=10, fig.height=16}
+```{r missing_all, fig.width=10, fig.height=16}
 missing_plot(data = data_missing_all,
              title = "Samples / pooled samples")
 ```
 
-## Pooled samples
+### Pooled samples
 
-```{r fig.width=10, fig.height=16}
+```{r missing_pool, fig.width=10, fig.height=16}
 missing_plot(data = data_missing_pool,
              title = "Samples / pooled samples")
 ```
 
+## Histogram
+
+```{r histogram_calc}
+data_histogram <- prepare_hist_data(data = clean_data,
+                                    meta_data = meta_data,
+                                    sampleid_raw_col = sampleid_raw_col,
+                                    sampleid_meta_col = sampleid_meta_col,
+                                    batch_col = meta_batch_col,
+                                    id_qcpool = qcpool_ids)
+```
+
+```{r histogram, fig.width=10}
+histogram_plot(data = data_histogram)
+```
+
+## Trend plot {.tabset}
+
+```{r trend_calc}
+data_trend <- prepare_trend_data(data = clean_data,
+                                 meta_data = meta_data,
+                                 sampleid_raw_col = sampleid_raw_col,
+                                 sampleid_meta_col = sampleid_meta_col,
+                                 order_col = meta_acqorder_col,
+                                 batch_col = meta_batch_col,
+                                 id_qcpool = qcpool_ids)
+```
+
+### Over all batches
+
+```{r trend_all, fig.width=10}
+trend_plot(data = data_trend,
+           sampleid_raw_col = sampleid_raw_col,
+           batch_col = meta_batch_col,
+           yaxis = "log2fc")
+```
+
+### Per batch
+
+```{r trend_batch, fig.width=10}
+trend_plot(data = data_trend,
+           sampleid_raw_col = sampleid_raw_col,
+           batch_col = meta_batch_col,
+           yaxis = "log2fc_batch")
+```
+
+## Heatmap
+
+```{r heatmap_calc}
+data_heatmap <- prepare_heatmap_data(data = clean_data,
+                                     meta_data = meta_data,
+                                     sampleid_raw_col = sampleid_raw_col,
+                                     sampleid_meta_col = sampleid_meta_col,
+                                     sampletype_col = meta_type_col,
+                                     batch_col = meta_batch_col,
+                                     id_qcpool = qcpool_ids,
+                                     id_samples = sample_ids)
+```
+
+```{r heatmap, fig.width=10, fig.height=12}
+Heatmap(
+  matrix = data_heatmap$data,
+  heatmap_legend_param = list(title = "Z-score"),
+  right_annotation = rowAnnotation(
+    df = data_heatmap$row_ann,
+    col = data_heatmap$colors_ann
+  ),
+  cluster_rows = TRUE,
+  cluster_columns = FALSE
+)
+```
+
+## PCA {.tabset}
+
+```{r pca_calc}
+data_pca <- prepare_pca_data(data = clean_data,
+                             meta_data = meta_data,
+                             sampleid_raw_col = sampleid_raw_col,
+                             sampleid_meta_col = sampleid_meta_col,
+                             id_samples = sample_ids,
+                             id_qcpool = qcpool_ids)
+```
+
+### PC1 vs PC2
+
+```{r pca_12, fig.width=10, fig.height=6}
+p1 <- pca_scores_plot(data = data_pca,
+                      sampletype_col = meta_type_col,
+                      batch_col = meta_batch_col,
+                      xaxis = "PC1",
+                      yaxis = "PC2")
+p2 <- pca_loadings_plot(data = data_pca,
+                        xaxis = "PC1",
+                        yaxis = "PC2")
+
+wrap_plots(p1, p2,
+           ncol = 2)
+```
+
+### PC2 vs PC3
+
+```{r pca_23, fig.width=10, fig.height=6}
+p1 <- pca_scores_plot(data = data_pca,
+                      sampletype_col = meta_type_col,
+                      batch_col = meta_batch_col,
+                      xaxis = "PC2",
+                      yaxis = "PC3")
+p2 <- pca_loadings_plot(data = data_pca,
+                        xaxis = "PC2",
+                        yaxis = "PC3")
+
+wrap_plots(p1, p2,
+           ncol = 2)
+```
+
+### PC3 vs PC4
+
+```{r pca_34, fig.width=10, fig.height=6}
+p1 <- pca_scores_plot(data = data_pca,
+                      sampletype_col = meta_type_col,
+                      batch_col = meta_batch_col,
+                      xaxis = "PC3",
+                      yaxis = "PC4")
+p2 <- pca_loadings_plot(data = data_pca,
+                        xaxis = "PC3",
+                        yaxis = "PC4")
+
+wrap_plots(p1, p2,
+           ncol = 2)
+```
+
+## Relative log expression
+
+```{r rle_calc}
+data_rle <- prepare_rle_data(data = clean_data,
+                             meta_data = meta_data,
+                             sampleid_raw_col = sampleid_raw_col,
+                             sampleid_meta_col = sampleid_meta_col,
+                             order_col = meta_acqorder_col,
+                             batch_col = meta_batch_col,
+                             id_samples = sample_ids)
+```
+
+```{r rle, fig.width=10, fig.height=6}
+rle_plot(data = data_rle,
+         sampleid_raw_col = sampleid_raw_col,
+         batch_col = meta_batch_col)
+```
+
 # Session info
 
-```{r}
+```{r session_info}
 session_info()
 ```
 
