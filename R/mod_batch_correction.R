@@ -416,5 +416,49 @@ mod_batch_correction_server <- function(id, r){
       }
     )
 
+
+    output$bc_download_report <- shiny::downloadHandler(
+      filename = function() {
+        paste(Sys.Date(), "_batch_correction_overview.html", sep = "")
+      },
+      content = function(file) {
+        temp_report <- file.path(tempdir(), "bc_data_overview.Rmd")
+        report_file <- system.file("reports", "bc_data_overview.Rmd",
+                                   package = "BatchCorrection")
+        file.copy(from = report_file,
+                  to = temp_report,
+                  overwrite = TRUE)
+
+        params <- list(
+          data_file = r$data_file,
+          meta_file = r$meta_file,
+          clean_data = r$tables$clean_data,
+          meta_data = r$tables$meta_data,
+          sampleid_raw_col = r$indices$raw_id_col,
+          sampleid_meta_col = r$indices$meta_id_col,
+          meta_type_col = r$indices$meta_type_col,
+          meta_acqorder_col = r$indices$meta_acqorder_col,
+          meta_batch_col = r$indices$meta_batch_col,
+          sample_ids = r$indices$id_samples,
+          qcpool_ids = r$indices$id_qcpool,
+          blank_ids = r$indices$id_blanks
+        )
+
+        shiny::withProgress(
+          message = "Rendering report.....",
+          value = 0,
+          {
+            shiny::incProgress(1/10)
+            Sys.sleep(1)
+            shiny::incProgress(5/10)
+            rmarkdown::render(input = temp_report,
+                              output_file = file,
+                              params = params,
+                              envir = new.env(parent = globalenv()))
+          }
+        )
+      }
+    )
+
   })
 }
