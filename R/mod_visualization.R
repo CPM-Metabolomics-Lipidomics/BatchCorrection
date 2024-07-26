@@ -10,6 +10,7 @@
 #' @importFrom shiny NS tagList
 #' @importFrom plotly plotlyOutput
 #' @importFrom rmarkdown render
+#' @import gt
 mod_visualization_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -312,18 +313,33 @@ mod_visualization_server <- function(id, r){
                   overwrite = TRUE)
 
         params <- list(
+          data_file = r$data_file,
+          meta_file = r$meta_file,
           clean_data = r$tables$clean_data,
           meta_data = r$tables$meta_data,
           sampleid_raw_col = r$indices$raw_id_col,
           sampleid_meta_col = r$indices$meta_id_col,
+          meta_type_col = r$indices$meta_type_col,
+          meta_acqorder_col = r$indices$meta_acqorder_col,
+          meta_batch_col = r$indices$meta_batch_col,
           sample_ids = r$indices$id_samples,
-          qcpool_ids = r$indices$id_qcpool
+          qcpool_ids = r$indices$id_qcpool,
+          blank_ids = r$indices$id_blanks
         )
 
-        rmarkdown::render(input = temp_report,
-                          output_file = file,
-                          params = params,
-                          envir = new.env(parent = globalenv()))
+        shiny::withProgress(
+          message = "Rendering report.....",
+          value = 0,
+          {
+            shiny::incProgress(1/10)
+            Sys.sleep(1)
+            shiny::incProgress(5/10)
+            rmarkdown::render(input = temp_report,
+                              output_file = file,
+                              params = params,
+                              envir = new.env(parent = globalenv()))
+          }
+        )
       }
     )
 

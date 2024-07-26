@@ -180,7 +180,7 @@ distribution_plot <- function(data = NULL,
 #'
 #' @importFrom tidyr pivot_longer contains
 #'
-#' @noRd
+#' @export
 prepare_trend_data <- function(data = NULL,
                                meta_data = NULL,
                                sampleid_raw_col = NULL,
@@ -268,7 +268,7 @@ prepare_trend_data <- function(data = NULL,
 #'
 #' @author Rico Derks
 #'
-#' @noRd
+#' @export
 prepare_heatmap_data <- function(data = NULL,
                                  meta_data = NULL,
                                  sampleid_raw_col = NULL,
@@ -346,7 +346,7 @@ prepare_heatmap_data <- function(data = NULL,
 #' @importFrom pcaMethods pca
 #' @importFrom tidyr pivot_longer matches
 #'
-#' @noRd
+#' @export
 prepare_pca_data <- function(data = NULL,
                              meta_data = NULL,
                              sampleid_raw_col = NULL,
@@ -430,7 +430,7 @@ prepare_pca_data <- function(data = NULL,
 #' @importFrom tidyr pivot_longer matches
 #' @importFrom stats sd
 #'
-#' @noRd
+#' @export
 prepare_hist_data <- function(data = NULL,
                               meta_data = NULL,
                               sampleid_raw_col = NULL,
@@ -503,7 +503,7 @@ prepare_hist_data <- function(data = NULL,
 #' @importFrom tidyr pivot_longer matches
 #' @importFrom stats median
 #'
-#' @noRd
+#' @export
 prepare_rle_data <- function(data = NULL,
                              meta_data = NULL,
                              sampleid_raw_col = NULL,
