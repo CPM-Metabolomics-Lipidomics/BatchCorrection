@@ -180,7 +180,7 @@ distribution_plot <- function(data = NULL,
 #'
 #' @importFrom tidyr pivot_longer contains
 #'
-#' @noRd
+#' @export
 prepare_trend_data <- function(data = NULL,
                                meta_data = NULL,
                                sampleid_raw_col = NULL,
@@ -268,7 +268,7 @@ prepare_trend_data <- function(data = NULL,
 #'
 #' @author Rico Derks
 #'
-#' @noRd
+#' @export
 prepare_heatmap_data <- function(data = NULL,
                                  meta_data = NULL,
                                  sampleid_raw_col = NULL,
@@ -346,7 +346,7 @@ prepare_heatmap_data <- function(data = NULL,
 #' @importFrom pcaMethods pca
 #' @importFrom tidyr pivot_longer matches
 #'
-#' @noRd
+#' @export
 prepare_pca_data <- function(data = NULL,
                              meta_data = NULL,
                              sampleid_raw_col = NULL,
@@ -430,7 +430,7 @@ prepare_pca_data <- function(data = NULL,
 #' @importFrom tidyr pivot_longer matches
 #' @importFrom stats sd
 #'
-#' @noRd
+#' @export
 prepare_hist_data <- function(data = NULL,
                               meta_data = NULL,
                               sampleid_raw_col = NULL,
@@ -494,6 +494,7 @@ prepare_hist_data <- function(data = NULL,
 #' @param sampleid_raw_col character(1), name of the sample id column in the raw data.
 #' @param sampleid_meta_col character(1), name of the sample id column in the meta data.
 #' @param order_col character(1), name of the acquisition order column in the meta data.
+#' @param batch_col character(1), name of the batch column.
 #' @param id_samples character() vector with the names of the sample samples id's.
 #'
 #' @return data.frame
@@ -503,7 +504,7 @@ prepare_hist_data <- function(data = NULL,
 #' @importFrom tidyr pivot_longer matches
 #' @importFrom stats median
 #'
-#' @noRd
+#' @export
 prepare_rle_data <- function(data = NULL,
                              meta_data = NULL,
                              sampleid_raw_col = NULL,
@@ -571,7 +572,7 @@ prepare_rle_data <- function(data = NULL,
 #'
 #' @importFrom tidyr pivot_longer matches
 #'
-#' @noRd
+#' @export
 prepare_missing_data <- function(data = NULL,
                                  meta_data = NULL,
                                  sampleid_raw_col = NULL,

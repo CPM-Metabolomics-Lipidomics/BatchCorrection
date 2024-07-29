@@ -16,9 +16,6 @@ mod_batch_correction_ui <- function(id){
   tagList(
     bslib::page_sidebar(
       sidebar = bslib::sidebar(
-        title = shiny::uiOutput(
-          outputId = ns("bc_download_ui")
-        ),
         shiny::selectInput(
           inputId = ns("bc_select_method"),
           label = "Select method",
@@ -106,6 +103,12 @@ mod_batch_correction_ui <- function(id){
               outputId = ns("bc_rle_plot")
             )
           )
+        ),
+        bslib::nav_spacer(),
+        bslib::nav_item(
+          shiny::uiOutput(
+            outputId = ns("bc_download_ui")
+          )
         )
       ) # end navset_card_tab
     )
@@ -122,9 +125,6 @@ mod_batch_correction_server <- function(id, r){
     shiny::observeEvent(input$bc_select_method, {
       r$tables$bc_data <- NULL
       r$bc_status_text <- NULL
-      # output$bc_status_text <- shiny::renderUI({
-      #   NULL
-      # })
 
       if(input$bc_select_method == "loess") {
         output$bc_options_ui <- shiny::renderUI({
@@ -199,6 +199,11 @@ mod_batch_correction_server <- function(id, r){
 
       if(!is.null(r$tables$bc_data)) {
         r$bc_applied <- input$bc_select_method
+        r$settings_bc$method <- input$bc_select_method
+        if(input$bc_select_method == "loess") {
+          r$settings_bc$loess$batch <- input$bc_loess_batch
+          r$settings_bc$loess$span <- input$bc_loess_span
+        }
 
         print("Calculating...")
         print("  * trend plot")
@@ -381,17 +386,20 @@ mod_batch_correction_server <- function(id, r){
 
     #------------------------------------------------------------- download ----
     output$bc_download_ui <- shiny::renderUI({
+      shiny::req(r$tables$bc_data)
+
       shiny::tagList(
         bslib::popover(
-          bsicons::bs_icon(name = "cloud-download-fill"),
-          if(!is.null(r$tables$bc_data)) {
-            shiny::downloadButton(
-              outputId = ns("bc_download"),
-              label = "Download results"
-            )
-          } else {
-            shiny::p("No download yet!")
-          }
+          bsicons::bs_icon(name = "cloud-download-fill",
+                           size = "2em"),
+          shiny::downloadButton(
+            outputId = ns("bc_download"),
+            label = "Download results"
+          ),
+          shiny::downloadButton(
+            outputId = ns("bc_download_report"),
+            label = "Download report"
+          )
         )
       )
     })
@@ -407,6 +415,63 @@ mod_batch_correction_server <- function(id, r){
                     file = file,
                     row.names = FALSE)
         }
+      }
+    )
+
+
+    output$bc_download_report <- shiny::downloadHandler(
+      filename = function() {
+        paste(Sys.Date(), "_batch_correction_overview.html", sep = "")
+      },
+      content = function(file) {
+        temp_report <- file.path(tempdir(), "bc_data_overview.Rmd")
+        report_file <- system.file("reports", "bc_data_overview.Rmd",
+                                   package = "BatchCorrection")
+        file.copy(from = report_file,
+                  to = temp_report,
+                  overwrite = TRUE)
+
+        e <- new.env()
+
+        e$params <- list(
+          data_file = r$data_file,
+          meta_file = r$meta_file,
+          clean_data = r$tables$clean_data,
+          meta_data = r$tables$meta_data,
+          trend_data = r$data$trend,
+          histogram_data = r$data$histogram,
+          pca_data = r$data$pca,
+          heatmap_data = r$data$heatmap,
+          rle_data = r$data$rle,
+          trend_data_bc = r$data_bc$trend,
+          histogram_data_bc = r$data_bc$histogram,
+          pca_data_bc = r$data_bc$pca,
+          heatmap_data_bc = r$data_bc$heatmap,
+          rle_data_bc = r$data_bc$rle,
+          sampleid_raw_col = r$indices$raw_id_col,
+          sampleid_meta_col = r$indices$meta_id_col,
+          meta_type_col = r$indices$meta_type_col,
+          meta_acqorder_col = r$indices$meta_acqorder_col,
+          meta_batch_col = r$indices$meta_batch_col,
+          sample_ids = r$indices$id_samples,
+          qcpool_ids = r$indices$id_qcpool,
+          blank_ids = r$indices$id_blanks,
+          settings_bc = r$settings_bc,
+          settings_data =  r$settings_data
+        )
+
+        shiny::withProgress(
+          message = "Rendering report.....",
+          value = 0,
+          {
+            shiny::incProgress(1/10)
+            Sys.sleep(1)
+            shiny::incProgress(2.5/10)
+            rmarkdown::render(input = temp_report,
+                              output_file = file,
+                              envir = e)
+          }
+        )
       }
     )
 

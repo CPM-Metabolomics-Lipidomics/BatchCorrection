@@ -201,6 +201,7 @@ mod_data_server <- function(id, r){
     shiny::observeEvent(input$rawdata_file, {
       req(input$rawdata_file)
 
+      r$data_file <- input$rawdata_file$name
       file_path <- input$rawdata_file$datapath
       data_table <- read_data(file_path = file_path)
 
@@ -217,6 +218,7 @@ mod_data_server <- function(id, r){
     shiny::observeEvent(input$metadata_file, {
       req(input$metadata_file)
 
+      r$meta_file <- input$metadata_file$name
       file_path <- input$metadata_file$datapath
       data_table <- read_data(file_path = file_path)
 
@@ -325,6 +327,8 @@ mod_data_server <- function(id, r){
           })
           r$tables$clean_data <-
             r$tables$raw_data[r$tables$raw_data[, r$indices$raw_id_col] %in% c(r$indices$id_blanks, r$indices$id_qcpool, r$indices$id_samples), keep_features]
+          r$settings_data$raw_data$missing <- input$raw_missing
+
 
           shinyWidgets::updateProgressBar(
             session = session,

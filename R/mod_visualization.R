@@ -9,6 +9,8 @@
 #'
 #' @importFrom shiny NS tagList
 #' @importFrom plotly plotlyOutput
+#' @importFrom rmarkdown render
+#' @import gt
 mod_visualization_ui <- function(id){
   ns <- NS(id)
   tagList(
@@ -99,6 +101,12 @@ mod_visualization_ui <- function(id){
           shiny::plotOutput(
             outputId = ns("viz_rle_plot")
           )
+        )
+      ),
+      bslib::nav_spacer(),
+      bslib::nav_item(
+        shiny::uiOutput(
+          outputId = ns("viz_download_ui")
         )
       )
     ) # end navset_card_tab
@@ -268,5 +276,79 @@ mod_visualization_server <- function(id, r){
                                                sample_ids = r$indices$id_qcpool)
       }
     })
+
+
+    #------------------------------------------------------------- download ----
+    output$viz_download_ui <- shiny::renderUI({
+      shiny::req(r$data$missing,
+                 r$data$histogram,
+                 r$data$trend,
+                 r$data$heatmap,
+                 r$data$pca,
+                 r$data$rle)
+
+        shiny::tagList(
+          bslib::popover(
+            bsicons::bs_icon(name = "cloud-download-fill",
+                             size = "2em"),
+            shiny::downloadButton(
+              outputId = ns("viz_download_report"),
+              label = "Download overview report"
+            )
+          )
+        )
+    })
+
+
+    output$viz_download_report <- shiny::downloadHandler(
+      filename = function() {
+        paste(Sys.Date(), "_data_overview.html", sep = "")
+      },
+      content = function(file) {
+        temp_report <- file.path(tempdir(), "data_overview.Rmd")
+        report_file <- system.file("reports", "data_overview.Rmd",
+                                   package = "BatchCorrection")
+        file.copy(from = report_file,
+                  to = temp_report,
+                  overwrite = TRUE)
+
+        e <- new.env()
+
+        e$params <- list(
+          data_file = r$data_file,
+          meta_file = r$meta_file,
+          clean_data = r$tables$clean_data,
+          meta_data = r$tables$meta_data,
+          trend_data = r$data$trend,
+          histogram_data = r$data$histogram,
+          pca_data = r$data$pca,
+          heatmap_data = r$data$heatmap,
+          rle_data = r$data$rle,
+          sampleid_raw_col = r$indices$raw_id_col,
+          sampleid_meta_col = r$indices$meta_id_col,
+          meta_type_col = r$indices$meta_type_col,
+          meta_acqorder_col = r$indices$meta_acqorder_col,
+          meta_batch_col = r$indices$meta_batch_col,
+          sample_ids = r$indices$id_samples,
+          qcpool_ids = r$indices$id_qcpool,
+          blank_ids = r$indices$id_blanks,
+          settings_data = r$settings_data
+        )
+
+        shiny::withProgress(
+          message = "Rendering report.....",
+          value = 0,
+          {
+            shiny::incProgress(1/10)
+            Sys.sleep(1)
+            shiny::incProgress(5/10)
+            rmarkdown::render(input = temp_report,
+                              output_file = file,
+                              envir = e)
+          }
+        )
+      }
+    )
+
   })
 }
