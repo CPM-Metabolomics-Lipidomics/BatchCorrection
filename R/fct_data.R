@@ -494,6 +494,7 @@ prepare_hist_data <- function(data = NULL,
 #' @param sampleid_raw_col character(1), name of the sample id column in the raw data.
 #' @param sampleid_meta_col character(1), name of the sample id column in the meta data.
 #' @param order_col character(1), name of the acquisition order column in the meta data.
+#' @param batch_col character(1), name of the batch column.
 #' @param id_samples character() vector with the names of the sample samples id's.
 #'
 #' @return data.frame

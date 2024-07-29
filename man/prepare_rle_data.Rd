@@ -25,6 +25,8 @@ prepare_rle_data(
 
 \item{order_col}{character(1), name of the acquisition order column in the meta data.}
 
+\item{batch_col}{character(1), name of the batch column.}
+
 \item{id_samples}{character() vector with the names of the sample samples id's.}
 }
 \value{
