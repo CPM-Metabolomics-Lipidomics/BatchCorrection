@@ -429,11 +429,18 @@ mod_batch_correction_server <- function(id, r){
                   to = temp_report,
                   overwrite = TRUE)
 
-        params <- list(
+        e <- new.env()
+
+        e$params <- list(
           data_file = r$data_file,
           meta_file = r$meta_file,
           clean_data = r$tables$clean_data,
           meta_data = r$tables$meta_data,
+          trend_data = r$data$trend,
+          histogram_data = r$data$histogram,
+          pca_data = r$data$pca,
+          heatmap_data = r$data$heatmap,
+          rle_data = r$data$rle,
           sampleid_raw_col = r$indices$raw_id_col,
           sampleid_meta_col = r$indices$meta_id_col,
           meta_type_col = r$indices$meta_type_col,
@@ -453,8 +460,7 @@ mod_batch_correction_server <- function(id, r){
             shiny::incProgress(5/10)
             rmarkdown::render(input = temp_report,
                               output_file = file,
-                              params = params,
-                              envir = new.env(parent = globalenv()))
+                              envir = e)
           }
         )
       }
