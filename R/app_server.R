@@ -18,6 +18,21 @@ app_server <- function(input, output, session) {
     bc_applied = "none",
     bc_status_text = NA,
 
+    settings_data = list(
+      raw_data = list(
+        missing = NULL
+      )
+    ),
+
+    #-------------------------------------------- batch correction settings ----
+    settings_bc = list(
+      method = NULL,
+      loess = list(
+        batch = NULL,
+        span = NULL
+      )
+    ),
+
     #-------------------------------------------------------------- indices ----
     indices = list(
       meta_id_col = NULL,

@@ -331,7 +331,8 @@ mod_visualization_server <- function(id, r){
           meta_batch_col = r$indices$meta_batch_col,
           sample_ids = r$indices$id_samples,
           qcpool_ids = r$indices$id_qcpool,
-          blank_ids = r$indices$id_blanks
+          blank_ids = r$indices$id_blanks,
+          settings_data = r$settings_data
         )
 
         shiny::withProgress(

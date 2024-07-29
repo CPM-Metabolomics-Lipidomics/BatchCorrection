@@ -35,6 +35,7 @@ meta_batch_col <- params$meta_batch_col
 sample_ids <- params$sample_ids
 qcpool_ids <- params$qcpool_ids
 blank_ids <- params$blank_ids
+settings_data <- params$settings_data
 ```
 
 # Settings
@@ -43,8 +44,9 @@ blank_ids <- params$blank_ids
 data.frame(
   "Parameter" = c(
     "Raw data file name",
-    "Meta data file name",
     "Column name sample ID's (raw)", 
+    "Max. missing values [%]",
+    "Meta data file name",
     "Column name sample ID's (meta)", 
     "Column name sample type",
     "Column name batch",
@@ -53,8 +55,9 @@ data.frame(
     "Pooled sample ID's"),
   "Value" = c(
     data_file,
-    meta_file,
     sampleid_raw_col,
+    settings_data$raw_data$missing,
+    meta_file,
     sampleid_meta_col,
     meta_type_col,
     meta_batch_col,

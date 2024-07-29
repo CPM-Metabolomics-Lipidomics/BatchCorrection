@@ -125,9 +125,6 @@ mod_batch_correction_server <- function(id, r){
     shiny::observeEvent(input$bc_select_method, {
       r$tables$bc_data <- NULL
       r$bc_status_text <- NULL
-      # output$bc_status_text <- shiny::renderUI({
-      #   NULL
-      # })
 
       if(input$bc_select_method == "loess") {
         output$bc_options_ui <- shiny::renderUI({
@@ -202,6 +199,11 @@ mod_batch_correction_server <- function(id, r){
 
       if(!is.null(r$tables$bc_data)) {
         r$bc_applied <- input$bc_select_method
+        r$settings_bc$method <- input$bc_select_method
+        if(input$bc_select_method == "loess") {
+          r$settings_bc$loess$batch <- input$bc_loess_batch
+          r$settings_bc$loess$span <- input$bc_loess_span
+        }
 
         print("Calculating...")
         print("  * trend plot")
@@ -441,6 +443,11 @@ mod_batch_correction_server <- function(id, r){
           pca_data = r$data$pca,
           heatmap_data = r$data$heatmap,
           rle_data = r$data$rle,
+          trend_data_bc = r$data_bc$trend,
+          histogram_data_bc = r$data_bc$histogram,
+          pca_data_bc = r$data_bc$pca,
+          heatmap_data_bc = r$data_bc$heatmap,
+          rle_data_bc = r$data_bc$rle,
           sampleid_raw_col = r$indices$raw_id_col,
           sampleid_meta_col = r$indices$meta_id_col,
           meta_type_col = r$indices$meta_type_col,
@@ -448,7 +455,9 @@ mod_batch_correction_server <- function(id, r){
           meta_batch_col = r$indices$meta_batch_col,
           sample_ids = r$indices$id_samples,
           qcpool_ids = r$indices$id_qcpool,
-          blank_ids = r$indices$id_blanks
+          blank_ids = r$indices$id_blanks,
+          settings_bc = r$settings_bc,
+          settings_data =  r$settings_data
         )
 
         shiny::withProgress(
@@ -457,7 +466,7 @@ mod_batch_correction_server <- function(id, r){
           {
             shiny::incProgress(1/10)
             Sys.sleep(1)
-            shiny::incProgress(5/10)
+            shiny::incProgress(2.5/10)
             rmarkdown::render(input = temp_report,
                               output_file = file,
                               envir = e)

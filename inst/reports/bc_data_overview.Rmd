@@ -27,6 +27,11 @@ histogram_data <- params$histogram_data
 pca_data <- params$pca_data
 heatmap_data <- params$heatmap_data
 rle_data <- params$rle_data
+trend_data_bc <- params$trend_data_bc
+histogram_data_bc <- params$histogram_data_bc
+pca_data_bc <- params$pca_data_bc
+heatmap_data_bc <- params$heatmap_data_bc
+rle_data_bc <- params$rle_data_bc
 sampleid_raw_col <- params$sampleid_raw_col
 sampleid_meta_col <- params$sampleid_meta_col
 meta_type_col <- params$meta_type_col
@@ -35,16 +40,44 @@ meta_batch_col <- params$meta_batch_col
 sample_ids <- params$sample_ids
 qcpool_ids <- params$qcpool_ids
 blank_ids <- params$blank_ids
+settings_bc <- params$settings_bc
+settings_data <- params$settings_data
 ```
 
-# Settings
+# Settings {.tabset}
+
+## Batch correction
+
+```{r bc_settings}
+parameters <- switch(
+  settings_bc$method,
+  "loess" = c("Method", "Batch", "Span"),
+  "Method"
+)
+
+values <- switch(
+  settings_bc$method,
+  "loess" = c(settings_bc$method, settings$loess$batch, settings$loess$span),
+  settings_bc$method
+)
+
+data.frame(
+  "Parameter" = parameters,
+  "Value" = values
+) |> 
+  gt()
+```
+
+
+## Data
 
 ```{r data_settings}
 data.frame(
   "Parameter" = c(
     "Raw data file name",
-    "Meta data file name",
     "Column name sample ID's (raw)", 
+    "Max. missing values [%]",
+    "Meta data file name",
     "Column name sample ID's (meta)", 
     "Column name sample type",
     "Column name batch",
@@ -53,8 +86,9 @@ data.frame(
     "Pooled sample ID's"),
   "Value" = c(
     data_file,
-    meta_file,
     sampleid_raw_col,
+    settings_data$raw_data$missing,
+    meta_file,
     sampleid_meta_col,
     meta_type_col,
     meta_batch_col,
@@ -66,7 +100,7 @@ data.frame(
   gt()
 ```
 
-# Overview {.tabset}
+# Overview before correction {.tabset}
 
 ## Missing data {.tabset}
 
@@ -193,6 +227,107 @@ wrap_plots(p1, p2,
 
 ```{r rle, fig.width=10, fig.height=6}
 rle_plot(data = rle_data,
+         sampleid_raw_col = sampleid_raw_col,
+         batch_col = meta_batch_col)
+```
+
+# Overview after correction {.tabset}
+
+## Histogram
+
+```{r histogram_bc, fig.width=10}
+histogram_plot(data = histogram_data_bc)
+```
+
+## Trend plot {.tabset}
+
+### Over all batches
+
+```{r trend_all_bc, fig.width=10}
+trend_plot(data = trend_data_bc,
+           sampleid_raw_col = sampleid_raw_col,
+           batch_col = meta_batch_col,
+           yaxis = "log2fc")
+```
+
+### Per batch
+
+```{r trend_batch_bc, fig.width=10}
+trend_plot(data = trend_data_bc,
+           sampleid_raw_col = sampleid_raw_col,
+           batch_col = meta_batch_col,
+           yaxis = "log2fc_batch")
+```
+
+## Heatmap
+
+```{r heatmap_bc, fig.width=10, fig.height=12}
+Heatmap(
+  matrix = heatmap_data_bc$data,
+  heatmap_legend_param = list(title = "Z-score"),
+  right_annotation = rowAnnotation(
+    df = heatmap_data_bc$row_ann,
+    col = heatmap_data_bc$colors_ann
+  ),
+  cluster_rows = TRUE,
+  cluster_columns = FALSE
+)
+```
+
+## PCA {.tabset}
+
+### PC1 vs PC2
+
+```{r pca_12_bc, fig.width=10, fig.height=6}
+p1 <- pca_scores_plot(data = pca_data_bc,
+                      sampletype_col = meta_type_col,
+                      batch_col = meta_batch_col,
+                      xaxis = "PC1",
+                      yaxis = "PC2")
+p2 <- pca_loadings_plot(data = pca_data_bc,
+                        xaxis = "PC1",
+                        yaxis = "PC2")
+
+wrap_plots(p1, p2,
+           ncol = 2)
+```
+
+### PC2 vs PC3
+
+```{r pca_23_bc, fig.width=10, fig.height=6}
+p1 <- pca_scores_plot(data = pca_data_bc,
+                      sampletype_col = meta_type_col,
+                      batch_col = meta_batch_col,
+                      xaxis = "PC2",
+                      yaxis = "PC3")
+p2 <- pca_loadings_plot(data = pca_data_bc,
+                        xaxis = "PC2",
+                        yaxis = "PC3")
+
+wrap_plots(p1, p2,
+           ncol = 2)
+```
+
+### PC3 vs PC4
+
+```{r pca_34_bc, fig.width=10, fig.height=6}
+p1 <- pca_scores_plot(data = pca_data_bc,
+                      sampletype_col = meta_type_col,
+                      batch_col = meta_batch_col,
+                      xaxis = "PC3",
+                      yaxis = "PC4")
+p2 <- pca_loadings_plot(data = pca_data_bc,
+                        xaxis = "PC3",
+                        yaxis = "PC4")
+
+wrap_plots(p1, p2,
+           ncol = 2)
+```
+
+## Relative log expression
+
+```{r rle_bc, fig.width=10, fig.height=6}
+rle_plot(data = rle_data_bc,
          sampleid_raw_col = sampleid_raw_col,
          batch_col = meta_batch_col)
 ```
