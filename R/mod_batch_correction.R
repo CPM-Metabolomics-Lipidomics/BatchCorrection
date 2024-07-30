@@ -187,6 +187,7 @@ mod_batch_correction_server <- function(id, r){
                                        method = input$bc_loess_batch)
         },
         "combat" = {
+          print("Combat batch correction")
           r$tables$bc_data <- combat_bc(data = r$tables$clean_data,
                                         meta_data = r$tables$meta_data,
                                         sampleid_raw_col = r$indices$raw_id_col,

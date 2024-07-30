@@ -578,7 +578,6 @@ prepare_missing_data <- function(data = NULL,
                                  sampleid_raw_col = NULL,
                                  sampleid_meta_col = NULL,
                                  sample_ids = NULL) {
-
   feature_names <- colnames(data)[-1]
 
   data <- merge(
@@ -607,8 +606,12 @@ prepare_missing_data <- function(data = NULL,
   data_long <- as.data.frame(tapply(data_long, list(data_long$featureNames, data_long$missing, data_long$total), function(x) {
     nrow(x)
   }))
-  data_long$featureNames <- rownames(data_long)
+
+  if(ncol(data_long) == 1) {
+    data_long$`TRUE` <- 0
+  }
   colnames(data_long)[1:2] <- c("FALSE", "TRUE")
+  data_long$featureNames <- rownames(data_long)
 
   data_long <- data_long |>
     tidyr::pivot_longer(

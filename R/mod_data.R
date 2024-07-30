@@ -325,6 +325,7 @@ mod_data_server <- function(id, r){
           keep_features <- apply(r$tables$raw_data[r$tables$raw_data[, r$indices$raw_id_col] %in% c(r$indices$id_qcpool, r$indices$id_samples), ], 2, function(x) {
             mean(is.na(x)) <= raw_missing
           })
+
           r$tables$clean_data <-
             r$tables$raw_data[r$tables$raw_data[, r$indices$raw_id_col] %in% c(r$indices$id_blanks, r$indices$id_qcpool, r$indices$id_samples), keep_features]
           r$settings_data$raw_data$missing <- input$raw_missing
