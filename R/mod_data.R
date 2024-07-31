@@ -12,10 +12,12 @@
 #' @importFrom DT dataTableOutput
 #' @importFrom bsicons bs_icon
 #' @importFrom bslib navset_card_tab nav_panel card card_body page_sidebar sidebar
+#' @importFrom shinyjs useShinyjs enable disabled
 #'
 mod_data_ui <- function(id){
   ns <- shiny::NS(id)
   shiny::tagList(
+    shinyjs::useShinyjs(),
     bslib::navset_card_tab(
       bslib::nav_panel(
         title = "Meta data",
@@ -136,11 +138,13 @@ mod_data_ui <- function(id){
               height = "20%",
               bslib::layout_column_wrap(
                 width = 1 / 2,
-                shiny::fileInput(
-                  inputId = ns("rawdata_file"),
-                  label = "Data file:",
-                  multiple = FALSE,
-                  accept = c(".csv", ".tsv", ".txt", ".xlsx")
+                shinyjs::disabled(
+                  shiny::fileInput(
+                    inputId = ns("rawdata_file"),
+                    label = "Data file:",
+                    multiple = FALSE,
+                    accept = c(".csv", ".tsv", ".txt", ".xlsx")
+                  )
                 ),
                 shiny::selectInput(
                   inputId = ns("raw_select_table"),
@@ -279,6 +283,7 @@ mod_data_server <- function(id, r){
       r$bc_applied <- "none"
       r$tables$bc_data <- NULL
 
+      shinyjs::enable(id = "rawdata_file")
     })
 
 
