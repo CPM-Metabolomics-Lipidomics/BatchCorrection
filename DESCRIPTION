@@ -1,11 +1,10 @@
 Package: BatchCorrection
 Title: This is a Shiny app to check for possible batch effects
-Version: 0.1.5
+Version: 0.1.5.9000
 Authors@R: 
     person("Rico", "Derks", , "r.j.e.derks@lumc.nl", role = c("cre", "aut"))
-Description: This is a Shiny app to check for possible batch effects. In
-    the future it will also offer the posibility to apply several batch
-    correction techniques.
+Description: This is a Shiny app to check for possible batch effects and serveral
+  batch correction methods are available to apply if needed.
 License: GPL (>= 3)
 URL: https://github.com/ricoderks/BatchCorrection
 BugReports: https://github.com/ricoderks/BatchCorrection/issues
