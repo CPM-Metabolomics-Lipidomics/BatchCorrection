@@ -7,7 +7,7 @@
 #'
 #' @noRd
 #'
-#' @importFrom shiny NS tagList
+#' @importFrom shiny NS tagList withProgress incProgress
 #' @importFrom shinyWidgets progressBar updateProgressBar
 #' @importFrom DT dataTableOutput
 #' @importFrom bsicons bs_icon
@@ -347,59 +347,72 @@ mod_data_server <- function(id, r){
             total = nrow(r$tables$raw_data)
           )
 
-          print("Calculating...")
-          print("  * Missing values plot")
-          r$data$missing <- prepare_missing_data(data = r$tables$clean_data,
+          shiny::withProgress(
+            message = "Calculating .....",
+            value = 0,
+            {
+              print("Calculating...")
+              print("  * Missing values plot")
+              r$data$missing <- prepare_missing_data(data = r$tables$clean_data,
+                                                     meta_data = r$tables$meta_data,
+                                                     sampleid_raw_col = r$indices$raw_id_col,
+                                                     sampleid_meta_col = r$indices$meta_id_col,
+                                                     sample_ids = c(r$indices$id_qcpool, r$indices$id_samples))
+              shiny::incProgress(1/6)
+
+              print("  * trend plot")
+              r$data$trend <- prepare_trend_data(data = r$tables$clean_data,
                                                  meta_data = r$tables$meta_data,
                                                  sampleid_raw_col = r$indices$raw_id_col,
                                                  sampleid_meta_col = r$indices$meta_id_col,
-                                                 sample_ids = c(r$indices$id_qcpool, r$indices$id_samples))
+                                                 order_col = r$indices$meta_acqorder_col,
+                                                 batch_col = r$indices$meta_batch_col,
+                                                 id_qcpool = r$indices$id_qcpool)
+              shiny::incProgress(1/6)
 
-          print("  * trend plot")
-          r$data$trend <- prepare_trend_data(data = r$tables$clean_data,
+              print("  * histogram")
+              r$data$histogram <- prepare_hist_data(data = r$tables$clean_data,
+                                                    meta_data = r$tables$meta_data,
+                                                    sampleid_raw_col = r$indices$raw_id_col,
+                                                    sampleid_meta_col = r$indices$meta_id_col,
+                                                    batch_col = r$indices$meta_batch_col,
+                                                    id_qcpool = r$indices$id_qcpool)
+              shiny::incProgress(1/6)
+
+              print("  * heatmap")
+              r$data$heatmap <- prepare_heatmap_data(data = r$tables$clean_data,
+                                                     meta_data = r$tables$meta_data,
+                                                     sampleid_raw_col = r$indices$raw_id_col,
+                                                     sampleid_meta_col = r$indices$meta_id_col,
+                                                     sampletype_col = r$indices$meta_type_col,
+                                                     batch_col = r$indices$meta_batch_col,
+                                                     id_qcpool = r$indices$id_qcpool,
+                                                     id_samples = r$indices$id_samples)
+              shiny::incProgress(1/6)
+
+              print("  * PCA")
+              r$data$pca <- prepare_pca_data(data = r$tables$clean_data,
+                                             meta_data = r$tables$meta_data,
+                                             sampleid_raw_col = r$indices$raw_id_col,
+                                             sampleid_meta_col = r$indices$meta_id_col,
+                                             id_samples = r$indices$id_samples,
+                                             id_qcpool = r$indices$id_qcpool)
+              shiny::incProgress(1/6)
+
+              print("  * RLE")
+              r$data$rle <- prepare_rle_data(data = r$tables$clean_data,
                                              meta_data = r$tables$meta_data,
                                              sampleid_raw_col = r$indices$raw_id_col,
                                              sampleid_meta_col = r$indices$meta_id_col,
                                              order_col = r$indices$meta_acqorder_col,
                                              batch_col = r$indices$meta_batch_col,
-                                             id_qcpool = r$indices$id_qcpool)
+                                             id_samples = r$indices$id_samples)
+              shiny::incProgress(1/6)
 
-          print("  * histogram")
-          r$data$histogram <- prepare_hist_data(data = r$tables$clean_data,
-                                                meta_data = r$tables$meta_data,
-                                                sampleid_raw_col = r$indices$raw_id_col,
-                                                sampleid_meta_col = r$indices$meta_id_col,
-                                                batch_col = r$indices$meta_batch_col,
-                                                id_qcpool = r$indices$id_qcpool)
+              print("...done!")
+            }
+          )
 
-          print("  * heatmap")
-          r$data$heatmap <- prepare_heatmap_data(data = r$tables$clean_data,
-                                                 meta_data = r$tables$meta_data,
-                                                 sampleid_raw_col = r$indices$raw_id_col,
-                                                 sampleid_meta_col = r$indices$meta_id_col,
-                                                 sampletype_col = r$indices$meta_type_col,
-                                                 batch_col = r$indices$meta_batch_col,
-                                                 id_qcpool = r$indices$id_qcpool,
-                                                 id_samples = r$indices$id_samples)
-
-          print("  * PCA")
-          r$data$pca <- prepare_pca_data(data = r$tables$clean_data,
-                                         meta_data = r$tables$meta_data,
-                                         sampleid_raw_col = r$indices$raw_id_col,
-                                         sampleid_meta_col = r$indices$meta_id_col,
-                                         id_samples = r$indices$id_samples,
-                                         id_qcpool = r$indices$id_qcpool)
-
-          print("  * RLE")
-          r$data$rle <- prepare_rle_data(data = r$tables$clean_data,
-                                         meta_data = r$tables$meta_data,
-                                         sampleid_raw_col = r$indices$raw_id_col,
-                                         sampleid_meta_col = r$indices$meta_id_col,
-                                         order_col = r$indices$meta_acqorder_col,
-                                         batch_col = r$indices$meta_batch_col,
-                                         id_samples = r$indices$id_samples)
-
-          print("...done!")
         })
 
 
