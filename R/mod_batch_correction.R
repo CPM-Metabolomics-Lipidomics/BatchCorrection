@@ -7,7 +7,7 @@
 #'
 #' @noRd
 #'
-#' @importFrom shiny NS tagList
+#' @importFrom shiny NS tagList withProgress incProgress
 #' @importFrom bsicons bs_icon
 #' @importFrom utils write.csv
 mod_batch_correction_ui <- function(id){
