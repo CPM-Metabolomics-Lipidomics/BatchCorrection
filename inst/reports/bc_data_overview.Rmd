@@ -57,7 +57,7 @@ parameters <- switch(
 
 values <- switch(
   settings_bc$method,
-  "loess" = c(settings_bc$method, settings$loess$batch, settings$loess$span),
+  "loess" = c(settings_bc$method, settings_bc$loess$batch, settings_bc$loess$span),
   settings_bc$method
 )
 
