@@ -393,6 +393,10 @@ mod_batch_correction_server <- function(id, r){
         bslib::popover(
           bsicons::bs_icon(name = "cloud-download-fill",
                            size = "2em"),
+          shiny::tags$head(shiny::tags$style(type = "text/css",
+                                             "#bc-bc_download {width: 225px}")),
+          shiny::tags$head(shiny::tags$style(type = "text/css",
+                                             "#bc-bc_download_report {width: 225px}")),
           shiny::downloadButton(
             outputId = ns("bc_download"),
             label = "Download results"
