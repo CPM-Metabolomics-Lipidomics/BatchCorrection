@@ -77,24 +77,28 @@ data.frame(
     "Raw data file name",
     "Column name sample ID's (raw)", 
     "Max. missing values [%]",
+    "Include blanks",
     "Meta data file name",
     "Column name sample ID's (meta)", 
     "Column name sample type",
     "Column name batch",
     "Column name acquisition order",
     "Sample ID's", 
-    "Pooled sample ID's"),
+    "Pooled sample ID's",
+    "Blank ID's"),
   "Value" = c(
     data_file,
     sampleid_raw_col,
     settings_data$raw_data$missing,
+    settings_data$include_blanks,
     meta_file,
     sampleid_meta_col,
     meta_type_col,
     meta_batch_col,
     meta_acqorder_col,
     paste(sample_ids, collapse = ", "),
-    paste(qcpool_ids, collapse = ", ")
+    paste(qcpool_ids, collapse = ", "),
+    paste(blank_ids, collapse = ", ")
   )
 ) |> 
   gt()
@@ -105,6 +109,12 @@ data.frame(
 ## Missing data {.tabset}
 
 ```{r missing_calc}
+if(settings_data$include_blanks) {
+  samples_selected <- c(blank_ids, qcpool_ids, sample_ids)
+} else {
+  samples_selected <- c(qcpool_ids, sample_ids)
+}
+
 data_missing_all <- prepare_missing_data(data = clean_data,
                                          meta_data = meta_data,
                                          sampleid_raw_col = sampleid_raw_col,
@@ -116,20 +126,52 @@ data_missing_pool <- prepare_missing_data(data = clean_data,
                                           sampleid_raw_col = sampleid_raw_col,
                                           sampleid_meta_col = sampleid_meta_col,
                                           sample_ids = qcpool_ids)
+
+data_missing_sample <- prepare_missing_data(data = clean_data,
+                                          meta_data = meta_data,
+                                          sampleid_raw_col = sampleid_raw_col,
+                                          sampleid_meta_col = sampleid_meta_col,
+                                          sample_ids = sample_ids)
+
+data_missing_blank <- prepare_missing_data(data = clean_data,
+                                           meta_data = meta_data,
+                                           sampleid_raw_col = sampleid_raw_col,
+                                           sampleid_meta_col = sampleid_meta_col,
+                                           sample_ids = blank_ids)
 ```
 
-### Samples / pooled samples
-
-```{r missing_all, fig.width=10, fig.height=16}
+```{r missing_all, fig.width=10, fig.height=16, results='asis'}
+if(settings_data$include_blanks) {
+  cat("### Blanks / Samples/ Pooled samples\n")
+  title <- "Blanks / Samples/ Pooled samples"
+} else {
+  cat("### Samples/ Pooled samples\n")
+  title <- "Samples / Pooled samples"
+}
 missing_plot(data = data_missing_all,
-             title = "Samples / pooled samples")
+             title = title)
+```
+
+### Samples
+
+```{r missing_sample, fig.width=10, fig.height=16}
+missing_plot(data = data_missing_sample,
+             title = "Samples")
 ```
 
 ### Pooled samples
 
 ```{r missing_pool, fig.width=10, fig.height=16}
 missing_plot(data = data_missing_pool,
-             title = "Samples / pooled samples")
+             title = "Pooled samples")
+```
+
+```{r missing_blank, fig.width=10, fig.height=16, results='asis'}
+if(settings_data$include_blanks) {
+  cat("### Blanks\n")
+  missing_plot(data = data_missing_blank,
+               title = "Blanks")
+}
 ```
 
 ## Histogram
