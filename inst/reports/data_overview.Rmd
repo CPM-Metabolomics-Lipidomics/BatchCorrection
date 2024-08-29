@@ -78,6 +78,12 @@ data.frame(
 ## Missing data {.tabset}
 
 ```{r missing_calc}
+if(settings_data$include_blanks) {
+  samples_selected <- c(blank_ids, qcpool_ids, sample_ids)
+} else {
+  samples_selected <- c(qcpool_ids, sample_ids)
+}
+
 data_missing_all <- prepare_missing_data(data = clean_data,
                                          meta_data = meta_data,
                                          sampleid_raw_col = sampleid_raw_col,
@@ -90,6 +96,12 @@ data_missing_pool <- prepare_missing_data(data = clean_data,
                                           sampleid_meta_col = sampleid_meta_col,
                                           sample_ids = qcpool_ids)
 
+data_missing_sample <- prepare_missing_data(data = clean_data,
+                                          meta_data = meta_data,
+                                          sampleid_raw_col = sampleid_raw_col,
+                                          sampleid_meta_col = sampleid_meta_col,
+                                          sample_ids = sample_ids)
+
 data_missing_blank <- prepare_missing_data(data = clean_data,
                                            meta_data = meta_data,
                                            sampleid_raw_col = sampleid_raw_col,
@@ -97,16 +109,23 @@ data_missing_blank <- prepare_missing_data(data = clean_data,
                                            sample_ids = blank_ids)
 ```
 
-### Samples / pooled samples
-
-```{r missing_all, fig.width=10, fig.height=16}
+```{r missing_all, fig.width=10, fig.height=16, results='asis'}
 if(settings_data$include_blanks) {
+  cat("### Blanks / Samples/ Pooled samples\n")
   title <- "Blanks / Samples/ Pooled samples"
 } else {
+  cat("### Samples/ Pooled samples\n")
   title <- "Samples / Pooled samples"
 }
 missing_plot(data = data_missing_all,
              title = title)
+```
+
+### Samples
+
+```{r missing_sample, fig.width=10, fig.height=16}
+missing_plot(data = data_missing_sample,
+             title = "Samples")
 ```
 
 ### Pooled samples
@@ -123,7 +142,6 @@ if(settings_data$include_blanks) {
                title = "Blanks")
 }
 ```
-
 
 ## Histogram
 
