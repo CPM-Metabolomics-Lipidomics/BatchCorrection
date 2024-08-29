@@ -172,8 +172,6 @@ mod_batch_correction_server <- function(id, r){
         input$bc_select_method,
         "median" = {
           print("Median batch correction")
-          # print(r$settings_data$include_blanks)
-          # print(ifelse(r$settings_data$include_blanks, r$indices$id_blanks, NULL))
           r$tables$bc_data <- median_bc(data = r$tables$clean_data,
                                         meta_data = r$tables$meta_data,
                                         sampleid_raw_col = r$indices$raw_id_col,
