@@ -20,7 +20,8 @@ app_server <- function(input, output, session) {
 
     settings_data = list(
       raw_data = list(
-        missing = NULL
+        missing = NULL,
+        include_blanks = TRUE
       )
     ),
 

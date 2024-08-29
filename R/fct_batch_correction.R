@@ -10,6 +10,7 @@
 #' @param sampleid_meta_col character(1), name of the sample id column in the meta data.
 #' @param id_samples character() vector with the names of the sample samples id's.
 #' @param id_qcpool character() vector with the names of the pooled sample id's.
+#' @param id_blanks character() vector with the names of the blank id's.
 #' @param batch_col character(1), name of the batch column.
 #'
 #' @return data.frame with median batch corrected data.
@@ -25,6 +26,7 @@ median_bc <- function(data = NULL,
                       sampleid_meta_col = NULL,
                       id_samples = NULL,
                       id_qcpool = NULL,
+                      id_blanks = NULL,
                       batch_col = NULL) {
   feature_names <- colnames(data)[-1]
 
@@ -36,9 +38,15 @@ median_bc <- function(data = NULL,
     all.x = TRUE
   )
 
+  if(is.null(id_blanks)) {
+    samples_selected <- c(id_qcpool, id_samples)
+  } else {
+    samples_selected <- c(id_blanks, id_qcpool, id_samples)
+  }
+
   # sort the columns
   other_columns <- colnames(data)[!(colnames(data) %in% feature_names)]
-  data <- data[data[, sampleid_raw_col] %in% c(id_qcpool, id_samples), c(other_columns, feature_names)]
+  data <- data[data[, sampleid_raw_col] %in% samples_selected, c(other_columns, feature_names)]
 
   cor_data <- data
   cor_data[, batch_col] <- factor(cor_data[, batch_col])
@@ -123,6 +131,7 @@ qc_rlsc <- function(tab, colv, or, span = 0.75, verbose = FALSE) {
 #' @param sampleid_meta_col character(1), name of the sample id column in the meta data.
 #' @param id_samples character() vector with the names of the sample samples id's.
 #' @param id_qcpool character() vector with the names of the pooled sample id's.
+#' @param id_blanks character() vector with the names of the blank id's.
 #' @param batch_col character(1), name of the batch column.
 #' @param order_col character(1), name of the acquisition order column.
 #' @param span numeric(1), the parameter alpha which controls the degree of smoothing.
@@ -139,6 +148,7 @@ loess_bc <- function(data = NULL,
                      sampleid_meta_col = NULL,
                      id_samples = NULL,
                      id_qcpool = NULL,
+                     id_blanks = NULL,
                      batch_col = NULL,
                      order_col = NULL,
                      span = 0.75,
@@ -157,9 +167,15 @@ loess_bc <- function(data = NULL,
     all.x = TRUE
   )
 
+  if(is.null(id_blanks)) {
+    samples_selected <- c(id_qcpool, id_samples)
+  } else {
+    samples_selected <- c(id_blanks, id_qcpool, id_samples)
+  }
+
   # sort the columns
   other_columns <- colnames(data)[!(colnames(data) %in% feature_names)]
-  data <- data[data[, sampleid_raw_col] %in% c(id_qcpool, id_samples), c(other_columns, feature_names)]
+  data <- data[data[, sampleid_raw_col] %in% samples_selected, c(other_columns, feature_names)]
 
   cor_data <- data
   cor_data[, batch_col] <- factor(cor_data[, batch_col])
@@ -200,7 +216,6 @@ loess_bc <- function(data = NULL,
     return(NULL)
   }
 
-
   return(cor_data[, c(sampleid_raw_col, feature_names)])
 }
 
@@ -216,6 +231,7 @@ loess_bc <- function(data = NULL,
 #' @param sampleid_meta_col character(1), name of the sample id column in the meta data.
 #' @param id_samples character() vector with the names of the sample samples id's.
 #' @param id_qcpool character() vector with the names of the pooled sample id's.
+#' @param id_blanks character() vector with the names of the blank id's.
 #' @param batch_col character(1), name of the batch column.
 #'
 #' @return data.frame with combat batch corrected data.
@@ -232,6 +248,7 @@ combat_bc <- function(data = NULL,
                       sampleid_meta_col = NULL,
                       id_samples = NULL,
                       id_qcpool = NULL,
+                      id_blanks = NULL,
                       batch_col = NULL) {
   feature_names <- colnames(data)[-1]
 
@@ -243,9 +260,15 @@ combat_bc <- function(data = NULL,
     all.x = TRUE
   )
 
+  if(is.null(id_blanks)) {
+    samples_selected <- c(id_qcpool, id_samples)
+  } else {
+    samples_selected <- c(id_blanks, id_qcpool, id_samples)
+  }
+
   # sort the columns
   other_columns <- colnames(data)[!(colnames(data) %in% feature_names)]
-  data <- data[data[, sampleid_raw_col] %in% c(id_qcpool, id_samples), c(other_columns, feature_names)]
+  data <- data[data[, sampleid_raw_col] %in% samples_selected, c(other_columns, feature_names)]
 
   data[, batch_col] <- factor(data[, batch_col])
   batches <- data[, batch_col]

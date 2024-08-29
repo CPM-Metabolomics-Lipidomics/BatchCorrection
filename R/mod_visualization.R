@@ -24,7 +24,9 @@ mod_visualization_ui <- function(id){
               shiny::selectInput(
                 inputId = ns("viz_missing_view_select"),
                 label = "Show",
-                choices = c("Pooled samples / samples" = "all",
+                choices = c("Blanks / Pooled samples / samples" = "all",
+                            "Blanks" = "blanks",
+                            "Samples" = "samples",
                             "Pooled samples" = "pooled"),
                 selected = "all"
               )
@@ -122,6 +124,26 @@ mod_visualization_server <- function(id, r){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
+    shiny::observeEvent(r$settings_data$include_blanks, {
+      if(r$settings_data$include_blanks) {
+        choices <-  c("Blanks / Pooled samples / samples" = "all",
+                      "Blanks" = "blanks",
+                      "Samples" = "samples",
+                      "Pooled samples" = "pooled")
+      } else {
+        choices <-  c("Pooled samples / samples" = "all",
+                      "Samples" = "samples",
+                      "Pooled samples" = "pooled")
+      }
+
+      shiny::updateSelectInput(
+        inputId = "viz_missing_view_select",
+        label = "Show",
+        choices = choices,
+        selected = "all"
+      )
+    })
+
     output$viz_missing <- shiny::renderPlot({
       shiny::req(r$tables$meta_data,
                  r$tables$clean_data,
@@ -134,7 +156,15 @@ mod_visualization_server <- function(id, r){
                  input$viz_missing_view_select)
       print("Show missing values plot")
       title <- switch(input$viz_missing_view_select,
-                      "all" = "Samples / pooled samples",
+                      "all" = {
+                        if(r$settings_data$include_blanks) {
+                          "Blanks / samples / pooled samples"
+                        } else {
+                          "Samples / pooled samples"
+                        }
+                      },
+                      "blanks" = "Blanks",
+                      "samples" = "Samples",
                       "pooled" = "Pooled samples")
       missing_plot(data = r$data$missing,
                    title = title)
@@ -256,25 +286,43 @@ mod_visualization_server <- function(id, r){
         r$tables$meta_data,
         r$indices$raw_id_col,
         r$indices$meta_id_col,
+        r$indices$id_blanks,
         r$indices$id_qcpool,
         r$indices$id_samples
       )
 
       print("Calculating...")
       print("  * Missing values plot")
-      if(input$viz_missing_view_select == "all") {
-        r$data$missing <- prepare_missing_data(data = r$tables$clean_data,
-                                               meta_data = r$tables$meta_data,
-                                               sampleid_raw_col = r$indices$raw_id_col,
-                                               sampleid_meta_col = r$indices$meta_id_col,
-                                               sample_ids = c(r$indices$id_qcpool, r$indices$id_samples))
-      } else {
-        r$data$missing <- prepare_missing_data(data = r$tables$clean_data,
-                                               meta_data = r$tables$meta_data,
-                                               sampleid_raw_col = r$indices$raw_id_col,
-                                               sampleid_meta_col = r$indices$meta_id_col,
-                                               sample_ids = r$indices$id_qcpool)
-      }
+      switch(input$viz_missing_view_select,
+             "all" = {
+               r$data$missing <- prepare_missing_data(data = r$tables$clean_data,
+                                                      meta_data = r$tables$meta_data,
+                                                      sampleid_raw_col = r$indices$raw_id_col,
+                                                      sampleid_meta_col = r$indices$meta_id_col,
+                                                      sample_ids = c(r$indices$id_qcpool, r$indices$id_samples))
+             },
+             "blanks" = {
+               r$data$missing <- prepare_missing_data(data = r$tables$clean_data,
+                                                      meta_data = r$tables$meta_data,
+                                                      sampleid_raw_col = r$indices$raw_id_col,
+                                                      sampleid_meta_col = r$indices$meta_id_col,
+                                                      sample_ids = r$indices$id_blanks)
+             },
+             "samples" = {
+               r$data$missing <- prepare_missing_data(data = r$tables$clean_data,
+                                                      meta_data = r$tables$meta_data,
+                                                      sampleid_raw_col = r$indices$raw_id_col,
+                                                      sampleid_meta_col = r$indices$meta_id_col,
+                                                      sample_ids = r$indices$id_samples)
+             },
+             "pooled" = {
+               r$data$missing <- prepare_missing_data(data = r$tables$clean_data,
+                                                      meta_data = r$tables$meta_data,
+                                                      sampleid_raw_col = r$indices$raw_id_col,
+                                                      sampleid_meta_col = r$indices$meta_id_col,
+                                                      sample_ids = r$indices$id_qcpool)
+             }
+      )
     })
 
 
@@ -287,16 +335,16 @@ mod_visualization_server <- function(id, r){
                  r$data$pca,
                  r$data$rle)
 
-        shiny::tagList(
-          bslib::popover(
-            bsicons::bs_icon(name = "cloud-download-fill",
-                             size = "2em"),
-            shiny::downloadButton(
-              outputId = ns("viz_download_report"),
-              label = "Download overview report"
-            )
+      shiny::tagList(
+        bslib::popover(
+          bsicons::bs_icon(name = "cloud-download-fill",
+                           size = "2em"),
+          shiny::downloadButton(
+            outputId = ns("viz_download_report"),
+            label = "Download overview report"
           )
         )
+      )
     })
 
 
