@@ -40,6 +40,11 @@ mod_help_ui <- function(id){
         shiny::h3("Raw data"),
         shiny::p("This tab is designed for the upload and curation of measurement data. The data must be provided with samples as rows and features as columns. The values can only be numerical or missing.
                   The first column of the raw data needs to be the column with unique sample ID's. The raw data can be read in different formats, i.e. tsv (tab separated), csv (comma separated) or xlsx (Excel)."),
+        shiny::p("Here you can also set:"),
+        shiny::tags$ul(
+          shiny::tags$li("the maximum amount of missing values allowed per feature (default = 50%)."),
+          shiny::tags$li("should blanks also be corrected (default = TRUE). ", shiny::strong("NOTE:"), "When calculating the amount of missing values the blanks are also taken into account when this is TRUE!")
+        )
       ),
       bslib::nav_panel(
         title = "Data overview",
@@ -87,7 +92,7 @@ mod_help_ui <- function(id){
       ),
       bslib::nav_panel(
         title = "Batch correction",
-        shiny::p("The app assumes that quality control methods are applied to the data, i.e. removal of features with high RSD, high background etc. The app can filter out features
+        shiny::p("The app assumes that quality control methods are applied to the data, i.e. removal of features with high RSD, high background, blank filtering etc. The app can filter out features
                  with missing values, but it is best to do this outside the app. Especially, features which have missing values in the pooled samples should be removed or carefully imputed."),
         shiny::hr(width = "75%", style = "margin-left:12.5%;"),
         shiny::h3("Median"),
