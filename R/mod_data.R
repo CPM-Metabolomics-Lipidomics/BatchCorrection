@@ -126,12 +126,23 @@ mod_data_ui <- function(id){
                     bsicons::bs_icon(name = "info-circle")
                   ),
                   "Maximum relative amount [%] of missing values per feature.
-                  If a feature has more missing values it will be removed"
+                  If a feature has more missing values it will be removed!"
                 ),
                 value = 50,
                 min = 0,
                 max = 100,
                 step = 1
+              ),
+              shiny::checkboxInput(
+                inputId = ns("raw_include_blanks"),
+                label = bslib::tooltip(
+                  trigger = list(
+                    "Include blanks",
+                    bsicons::bs_icon(name = "info-circle")
+                  ),
+                  "Inlcude blanks for batch correction."
+                ),
+                value = TRUE
               )
             ),
             bslib::card_body(
@@ -296,6 +307,7 @@ mod_data_server <- function(id, r){
         input$metadata_sample_pattern,
         input$metadata_file,
         input$rawdata_file,
+        input$raw_include_blanks,
         input$raw_missing), {
           shiny::req(r$tables$meta_data,
                      r$tables$raw_data,
@@ -304,10 +316,13 @@ mod_data_server <- function(id, r){
                      input$metadata_select_batch,
                      input$metadata_blank_pattern,
                      input$metadata_qc_pattern,
-                     input$metadata_sample_pattern)
+                     input$metadata_sample_pattern,
+                     input$raw_missing)
 
           r$bc_applied <- "none"
           r$tables$bc_data <- NULL
+
+          r$settings_data$include_blanks <- input$raw_include_blanks
 
           r$indices$meta_id_col <- input$metadata_select_sampleid
           r$indices$meta_type_col <- input$metadata_select_sampletype
@@ -326,8 +341,14 @@ mod_data_server <- function(id, r){
                                                    pattern = input$metadata_sample_pattern[1],
                                                    ignore.case = TRUE), input$metadata_select_sampleid]
 
+          if(r$settings_data$include_blanks) {
+            samples_selected <- c(r$indices$id_blanks, r$indices$id_qcpool, r$indices$id_samples)
+          } else {
+            samples_selected <- c(r$indices$id_qcpool, r$indices$id_samples)
+          }
+
           raw_missing <- input$raw_missing / 100
-          keep_features <- apply(r$tables$raw_data[r$tables$raw_data[, r$indices$raw_id_col] %in% c(r$indices$id_qcpool, r$indices$id_samples), ], 2, function(x) {
+          keep_features <- apply(r$tables$raw_data[r$tables$raw_data[, r$indices$raw_id_col] %in% samples_selected, ], 2, function(x) {
             mean(is.na(x)) <= raw_missing
           })
 
@@ -362,7 +383,7 @@ mod_data_server <- function(id, r){
                                                      meta_data = r$tables$meta_data,
                                                      sampleid_raw_col = r$indices$raw_id_col,
                                                      sampleid_meta_col = r$indices$meta_id_col,
-                                                     sample_ids = c(r$indices$id_qcpool, r$indices$id_samples))
+                                                     sample_ids = samples_selected)
               shiny::incProgress(1/6)
 
               print("  * trend plot")
