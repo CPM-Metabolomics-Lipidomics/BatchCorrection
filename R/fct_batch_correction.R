@@ -66,7 +66,13 @@ median_bc <- function(data = NULL,
     }
   }
 
-  return(cor_data[, c(sampleid_raw_col, feature_names)])
+  return(
+    list(
+      bc_data = cor_data[, c(sampleid_raw_col, feature_names)],
+      status = "ok",
+      message = ""
+    )
+  )
 }
 
 

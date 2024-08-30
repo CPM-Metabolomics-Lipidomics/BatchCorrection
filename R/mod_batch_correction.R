@@ -172,14 +172,14 @@ mod_batch_correction_server <- function(id, r){
         input$bc_select_method,
         "median" = {
           print("Median batch correction")
-          r$tables$bc_data <- median_bc(data = r$tables$clean_data,
-                                        meta_data = r$tables$meta_data,
-                                        sampleid_raw_col = r$indices$raw_id_col,
-                                        sampleid_meta_col = r$indices$meta_id_col,
-                                        id_samples = r$indices$id_samples,
-                                        id_qcpool = r$indices$id_qcpool,
-                                        id_blanks = id_blanks,
-                                        batch_col = r$indices$meta_batch_col)
+          res <- median_bc(data = r$tables$clean_data,
+                           meta_data = r$tables$meta_data,
+                           sampleid_raw_col = r$indices$raw_id_col,
+                           sampleid_meta_col = r$indices$meta_id_col,
+                           id_samples = r$indices$id_samples,
+                           id_qcpool = r$indices$id_qcpool,
+                           id_blanks = id_blanks,
+                           batch_col = r$indices$meta_batch_col)
         },
         "loess" = {
           print("LOESS batch correction")
@@ -197,14 +197,14 @@ mod_batch_correction_server <- function(id, r){
         },
         "combat" = {
           print("Combat batch correction")
-          r$tables$bc_data <- combat_bc(data = r$tables$clean_data,
-                                        meta_data = r$tables$meta_data,
-                                        sampleid_raw_col = r$indices$raw_id_col,
-                                        sampleid_meta_col = r$indices$meta_id_col,
-                                        id_samples = r$indices$id_samples,
-                                        id_qcpool = r$indices$id_qcpool,
-                                        id_blanks = id_blanks,
-                                        batch_col = r$indices$meta_batch_col)
+          res <- combat_bc(data = r$tables$clean_data,
+                           meta_data = r$tables$meta_data,
+                           sampleid_raw_col = r$indices$raw_id_col,
+                           sampleid_meta_col = r$indices$meta_id_col,
+                           id_samples = r$indices$id_samples,
+                           id_qcpool = r$indices$id_qcpool,
+                           id_blanks = id_blanks,
+                           batch_col = r$indices$meta_batch_col)
         }
       )
 
