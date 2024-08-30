@@ -212,11 +212,22 @@ loess_bc <- function(data = NULL,
       }
     )
 
+    return(
+      list(
+        bc_data = cor_data[, c(sampleid_raw_col, feature_names)],
+        status = "ok",
+        message = ""
+      )
+    )
   } else {
-    return(NULL)
+    return(
+      list(
+        bc_data = NULL,
+        status = "error",
+        message = "Error: there are missing values in the pooled samples. Please select a different batch correction method or remove the missing values!"
+      )
+    )
   }
-
-  return(cor_data[, c(sampleid_raw_col, feature_names)])
 }
 
 
