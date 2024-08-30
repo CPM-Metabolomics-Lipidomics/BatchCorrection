@@ -66,7 +66,13 @@ median_bc <- function(data = NULL,
     }
   }
 
-  return(cor_data[, c(sampleid_raw_col, feature_names)])
+  return(
+    list(
+      bc_data = cor_data[, c(sampleid_raw_col, feature_names)],
+      status = "ok",
+      message = ""
+    )
+  )
 }
 
 
@@ -212,11 +218,22 @@ loess_bc <- function(data = NULL,
       }
     )
 
+    return(
+      list(
+        bc_data = cor_data[, c(sampleid_raw_col, feature_names)],
+        status = "ok",
+        message = ""
+      )
+    )
   } else {
-    return(NULL)
+    return(
+      list(
+        bc_data = NULL,
+        status = "error",
+        message = "Error: there are missing values in the pooled samples. Please select a different batch correction method or remove the missing values!"
+      )
+    )
   }
-
-  return(cor_data[, c(sampleid_raw_col, feature_names)])
 }
 
 
@@ -276,18 +293,44 @@ combat_bc <- function(data = NULL,
   anno <- data[, other_columns]
   modcombat <- model.matrix(~1, data = anno)
 
-  cor_data <- ComBat(dat = t(as.matrix(data[, feature_names])),
-                     batch = batches,
-                     mod = modcombat,
-                     par.prior = TRUE,
-                     prior.plots = FALSE)
+  tryCatch(expr = {
+    cor_data <- ComBat(dat = t(as.matrix(data[, feature_names])),
+                       batch = batches,
+                       mod = modcombat,
+                       par.prior = TRUE,
+                       prior.plots = FALSE)
 
-  cor_data <- as.data.frame(t(cor_data))
-  cor_data <- cbind(
-    data[, sampleid_raw_col],
-    cor_data
-  )
-  colnames(cor_data)[1] <- sampleid_raw_col
+    cor_data <- as.data.frame(t(cor_data))
+    cor_data <- cbind(
+      data[, sampleid_raw_col],
+      cor_data
+    )
+    colnames(cor_data)[1] <- sampleid_raw_col
 
-  return(cor_data)
+    return(
+      list(
+        bc_data = cor_data,
+        status = "ok",
+        message = ""
+      )
+    )
+  },
+  error = function(e) {
+    print(e)
+    if(grepl(x = e,
+             pattern = "singular",
+             ignore.case = TRUE)) {
+      message <- "Error: an error has occurred. It seems that within a batch there are too many missing values!"
+    } else {
+      message <- "Error: an error has occurred. Batch correction not possible."
+    }
+
+    return(
+      list(
+        bc_data = NULL,
+        status = "error",
+        message = message
+      )
+    )
+  })
 }

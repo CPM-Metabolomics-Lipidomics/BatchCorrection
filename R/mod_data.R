@@ -320,6 +320,7 @@ mod_data_server <- function(id, r){
                      input$raw_missing)
 
           r$bc_applied <- "none"
+          r$bc_status_text <- ""
           r$tables$bc_data <- NULL
 
           r$settings_data$include_blanks <- input$raw_include_blanks

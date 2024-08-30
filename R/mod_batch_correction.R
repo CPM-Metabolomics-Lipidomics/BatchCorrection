@@ -172,47 +172,49 @@ mod_batch_correction_server <- function(id, r){
         input$bc_select_method,
         "median" = {
           print("Median batch correction")
-          # print(r$settings_data$include_blanks)
-          # print(ifelse(r$settings_data$include_blanks, r$indices$id_blanks, NULL))
-          r$tables$bc_data <- median_bc(data = r$tables$clean_data,
-                                        meta_data = r$tables$meta_data,
-                                        sampleid_raw_col = r$indices$raw_id_col,
-                                        sampleid_meta_col = r$indices$meta_id_col,
-                                        id_samples = r$indices$id_samples,
-                                        id_qcpool = r$indices$id_qcpool,
-                                        id_blanks = id_blanks,
-                                        batch_col = r$indices$meta_batch_col)
+          res <- median_bc(data = r$tables$clean_data,
+                           meta_data = r$tables$meta_data,
+                           sampleid_raw_col = r$indices$raw_id_col,
+                           sampleid_meta_col = r$indices$meta_id_col,
+                           id_samples = r$indices$id_samples,
+                           id_qcpool = r$indices$id_qcpool,
+                           id_blanks = id_blanks,
+                           batch_col = r$indices$meta_batch_col)
         },
         "loess" = {
           print("LOESS batch correction")
-          r$tables$bc_data <- loess_bc(data = r$tables$clean_data,
-                                       meta_data = r$tables$meta_data,
-                                       sampleid_raw_col = r$indices$raw_id_col,
-                                       sampleid_meta_col = r$indices$meta_id_col,
-                                       id_samples = r$indices$id_samples,
-                                       id_qcpool = r$indices$id_qcpool,
-                                       id_blanks = id_blanks,
-                                       batch_col = r$indices$meta_batch_col,
-                                       order_col = r$indices$meta_acqorder_col,
-                                       span = input$bc_loess_span,
-                                       method = input$bc_loess_batch)
+          res <- loess_bc(data = r$tables$clean_data,
+                          meta_data = r$tables$meta_data,
+                          sampleid_raw_col = r$indices$raw_id_col,
+                          sampleid_meta_col = r$indices$meta_id_col,
+                          id_samples = r$indices$id_samples,
+                          id_qcpool = r$indices$id_qcpool,
+                          id_blanks = id_blanks,
+                          batch_col = r$indices$meta_batch_col,
+                          order_col = r$indices$meta_acqorder_col,
+                          span = input$bc_loess_span,
+                          method = input$bc_loess_batch)
         },
         "combat" = {
           print("Combat batch correction")
-          r$tables$bc_data <- combat_bc(data = r$tables$clean_data,
-                                        meta_data = r$tables$meta_data,
-                                        sampleid_raw_col = r$indices$raw_id_col,
-                                        sampleid_meta_col = r$indices$meta_id_col,
-                                        id_samples = r$indices$id_samples,
-                                        id_qcpool = r$indices$id_qcpool,
-                                        id_blanks = id_blanks,
-                                        batch_col = r$indices$meta_batch_col)
+          res <- combat_bc(data = r$tables$clean_data,
+                           meta_data = r$tables$meta_data,
+                           sampleid_raw_col = r$indices$raw_id_col,
+                           sampleid_meta_col = r$indices$meta_id_col,
+                           id_samples = r$indices$id_samples,
+                           id_qcpool = r$indices$id_qcpool,
+                           id_blanks = id_blanks,
+                           batch_col = r$indices$meta_batch_col)
         }
       )
 
-      if(!is.null(r$tables$bc_data)) {
+      # if(!is.null(r$tables$bc_data)) {
+      if(res$status == "ok") {
+        r$tables$bc_data <- res$bc_data
+
         r$bc_applied <- input$bc_select_method
         r$settings_bc$method <- input$bc_select_method
+
         if(input$bc_select_method == "loess") {
           r$settings_bc$loess$batch <- input$bc_loess_batch
           r$settings_bc$loess$span <- input$bc_loess_span
@@ -266,7 +268,7 @@ mod_batch_correction_server <- function(id, r){
         print("...done!")
       } else {
         print("error")
-        r$bc_status_text <- "Error: there are missing values in the pooled samples. Please select a different batch correction method or remove the missing values!"
+        r$bc_status_text <- res$message
         r$bc_applied <- "none"
       }
     })
