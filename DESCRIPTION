@@ -1,6 +1,6 @@
 Package: BatchCorrection
 Title: This is a Shiny app to check for possible batch effects
-Version: 0.1.9
+Version: 0.1.8.9001
 Authors@R: 
     person("Rico", "Derks", , "r.j.e.derks@lumc.nl", role = c("cre", "aut"))
 Description: This is a Shiny app to check for possible batch effects and serveral
@@ -37,7 +37,7 @@ Suggests:
     spelling,
     testthat (>= 3.0.0)
 Remotes:
-    bioc::sva
+    bioc::sva,
     bioc::ComplexHeatmap
 Config/testthat/edition: 3
 Encoding: UTF-8
