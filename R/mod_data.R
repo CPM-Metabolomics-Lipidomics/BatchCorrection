@@ -142,7 +142,7 @@ mod_data_ui <- function(id){
                   ),
                   "Inlcude blanks for batch correction."
                 ),
-                value = TRUE
+                value = FALSE
               )
             ),
             bslib::card_body(
@@ -380,11 +380,28 @@ mod_data_server <- function(id, r){
             {
               print("Calculating...")
               print("  * Missing values plot")
-              r$data$missing <- prepare_missing_data(data = r$tables$clean_data,
-                                                     meta_data = r$tables$meta_data,
-                                                     sampleid_raw_col = r$indices$raw_id_col,
-                                                     sampleid_meta_col = r$indices$meta_id_col,
-                                                     sample_ids = samples_selected)
+              r$data$missing$all <- prepare_missing_data(data = r$tables$clean_data,
+                                                         meta_data = r$tables$meta_data,
+                                                         sampleid_raw_col = r$indices$raw_id_col,
+                                                         sampleid_meta_col = r$indices$meta_id_col,
+                                                         sample_ids = samples_selected)
+              if(r$settings_data$include_blanks) {
+                r$data$missing$blanks <- prepare_missing_data(data = r$tables$clean_data,
+                                                              meta_data = r$tables$meta_data,
+                                                              sampleid_raw_col = r$indices$raw_id_col,
+                                                              sampleid_meta_col = r$indices$meta_id_col,
+                                                              sample_ids = r$indices$id_blanks)
+              }
+              r$data$missing$pooled <- prepare_missing_data(data = r$tables$clean_data,
+                                                            meta_data = r$tables$meta_data,
+                                                            sampleid_raw_col = r$indices$raw_id_col,
+                                                            sampleid_meta_col = r$indices$meta_id_col,
+                                                            sample_ids = r$indices$id_qcpool)
+              r$data$missing$samples <- prepare_missing_data(data = r$tables$clean_data,
+                                                             meta_data = r$tables$meta_data,
+                                                             sampleid_raw_col = r$indices$raw_id_col,
+                                                             sampleid_meta_col = r$indices$meta_id_col,
+                                                             sample_ids = r$indices$id_samples)
               shiny::incProgress(1/6)
 
               print("  * trend plot")
