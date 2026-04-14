@@ -119,7 +119,7 @@ data_missing_all <- prepare_missing_data(data = clean_data,
                                          meta_data = meta_data,
                                          sampleid_raw_col = sampleid_raw_col,
                                          sampleid_meta_col = sampleid_meta_col,
-                                         sample_ids = c(qcpool_ids, sample_ids))
+                                         sample_ids = samples_selected)
 
 data_missing_pool <- prepare_missing_data(data = clean_data,
                                           meta_data = meta_data,
@@ -133,11 +133,13 @@ data_missing_sample <- prepare_missing_data(data = clean_data,
                                           sampleid_meta_col = sampleid_meta_col,
                                           sample_ids = sample_ids)
 
-data_missing_blank <- prepare_missing_data(data = clean_data,
-                                           meta_data = meta_data,
-                                           sampleid_raw_col = sampleid_raw_col,
-                                           sampleid_meta_col = sampleid_meta_col,
-                                           sample_ids = blank_ids)
+if(settings_data$include_blanks) {
+  data_missing_blank <- prepare_missing_data(data = clean_data,
+                                             meta_data = meta_data,
+                                             sampleid_raw_col = sampleid_raw_col,
+                                             sampleid_meta_col = sampleid_meta_col,
+                                             sample_ids = blank_ids)
+}
 ```
 
 ```{r missing_all, fig.width=10, fig.height=16, results='asis'}
