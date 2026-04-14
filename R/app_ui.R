@@ -6,6 +6,7 @@
 #' @rawNamespace import(shiny, except = c(dataTableOutput, renderDataTable))
 #'
 #' @importFrom waiter autoWaiter spin_loader
+#' @importFrom bslib page_navbar navbar_options nav_panel nav_spacer nav_menu
 #'
 #' @noRd
 #'
@@ -17,7 +18,7 @@ app_ui <- function(request) {
                        color = NA),
     bslib::page_navbar(
       title = paste0("CPM - BatchCorrection | v", utils::packageVersion("BatchCorrection")),
-      underline = TRUE,
+      navbar_options = bslib::navbar_options(underline = TRUE),
       bslib::nav_panel(
         title = "Data",
         mod_data_ui(id = "data")
