@@ -166,7 +166,7 @@ mod_visualization_server <- function(id, r){
                       "blanks" = "Blanks",
                       "samples" = "Samples",
                       "pooled" = "Pooled samples")
-      missing_plot(data = r$data$missing,
+      missing_plot(data = r$data$missing[[input$viz_missing_view_select]],
                    title = title)
     })
 

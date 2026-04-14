@@ -64,7 +64,12 @@ app_server <- function(input, output, session) {
       pca = NULL,
       heatmap = NULL,
       rle = NULL,
-      missing = NULL
+      missing = list(
+        all = NULL,
+        blanks = NULL,
+        pooled = NULL,
+        samples = NULL
+      )
     ),
     # after correction
     data_bc = list(
