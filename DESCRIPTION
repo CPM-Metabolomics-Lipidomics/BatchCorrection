@@ -1,6 +1,6 @@
 Package: BatchCorrection
 Title: This is a Shiny app to check for possible batch effects
-Version: 0.1.12.9000
+Version: 0.1.12.9001
 Authors@R: 
     person("Rico", "Derks", , "r.j.e.derks@lumc.nl", role = c("cre", "aut"))
 Description: This is a Shiny app to check for possible batch effects and
@@ -21,7 +21,6 @@ Imports:
     gt,
     patchwork,
     pcaMethods,
-    pkgload,
     plotly,
     RColorBrewer,
     readxl,
@@ -38,6 +37,7 @@ Imports:
     waiter
 Suggests: 
     htmltools,
+    pkgload,
     spelling,
     testthat (>= 3.0.0)
 Remotes:
