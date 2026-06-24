@@ -166,6 +166,7 @@ mod_visualization_server <- function(id, r){
                       "blanks" = "Blanks",
                       "samples" = "Samples",
                       "pooled" = "Pooled samples")
+
       missing_plot(data = r$data$missing[[input$viz_missing_view_select]],
                    title = title)
     })
@@ -278,53 +279,6 @@ mod_visualization_server <- function(id, r){
                sampleid_raw_col = r$indices$raw_id_col,
                batch_col = r$indices$meta_batch_col)
     })
-
-
-    observeEvent(input$viz_missing_view_select, {
-      shiny::req(
-        r$tables$clean_data,
-        r$tables$meta_data,
-        r$indices$raw_id_col,
-        r$indices$meta_id_col,
-        r$indices$id_blanks,
-        r$indices$id_qcpool,
-        r$indices$id_samples
-      )
-
-      print("Calculating...")
-      print("  * Missing values plot")
-      switch(input$viz_missing_view_select,
-             "all" = {
-               r$data$missing <- prepare_missing_data(data = r$tables$clean_data,
-                                                      meta_data = r$tables$meta_data,
-                                                      sampleid_raw_col = r$indices$raw_id_col,
-                                                      sampleid_meta_col = r$indices$meta_id_col,
-                                                      sample_ids = c(r$indices$id_qcpool, r$indices$id_samples))
-             },
-             "blanks" = {
-               r$data$missing <- prepare_missing_data(data = r$tables$clean_data,
-                                                      meta_data = r$tables$meta_data,
-                                                      sampleid_raw_col = r$indices$raw_id_col,
-                                                      sampleid_meta_col = r$indices$meta_id_col,
-                                                      sample_ids = r$indices$id_blanks)
-             },
-             "samples" = {
-               r$data$missing <- prepare_missing_data(data = r$tables$clean_data,
-                                                      meta_data = r$tables$meta_data,
-                                                      sampleid_raw_col = r$indices$raw_id_col,
-                                                      sampleid_meta_col = r$indices$meta_id_col,
-                                                      sample_ids = r$indices$id_samples)
-             },
-             "pooled" = {
-               r$data$missing <- prepare_missing_data(data = r$tables$clean_data,
-                                                      meta_data = r$tables$meta_data,
-                                                      sampleid_raw_col = r$indices$raw_id_col,
-                                                      sampleid_meta_col = r$indices$meta_id_col,
-                                                      sample_ids = r$indices$id_qcpool)
-             }
-      )
-    })
-
 
     #------------------------------------------------------------- download ----
     output$viz_download_ui <- shiny::renderUI({
