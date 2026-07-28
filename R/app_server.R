@@ -8,6 +8,7 @@
 #' @noRd
 #'
 app_server <- function(input, output, session) {
+  options(shiny.maxRequestSize = 30*1024^2)
 
   # for communication between modules
   r <- shiny::reactiveValues(
