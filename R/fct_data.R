@@ -310,8 +310,8 @@ prepare_heatmap_data <- function(data = NULL,
   colors_annotation <- list(
     "SampleType" = RColorBrewer::brewer.pal(name = "Set1",
                                             n = 9)[1:length(unique(data[, sampletype_col]))],
-    "Batch" = RColorBrewer::brewer.pal(name = "Set2",
-                                       n = 8)[1:length(unique(data[, batch_col]))]
+    "Batch" = RColorBrewer::brewer.pal(name = "Set3",
+                                       n = 12)[1:length(unique(data[, batch_col]))]
   )
   names(colors_annotation$SampleType) <- unique(data[, sampletype_col])
   names(colors_annotation$Batch) <- as.character(unique(data[, batch_col]))
