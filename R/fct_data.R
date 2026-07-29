@@ -241,7 +241,7 @@ prepare_trend_data <- function(data = NULL,
   data_long$log2fc_batch <- log2(data_long$value / data_long$refValueBatch)
 
   # make sure order of pooled samples is correct
-  pool_order <- pool_meta[order(pool_meta[, order_col]), sampleid_meta_col]
+  pool_order <- pool_meta[order(as.numeric(pool_meta[[order_col]])), sampleid_meta_col]
   data_long[, sampleid_raw_col] <- factor(x = data_long[, sampleid_raw_col],
                                           levels = pool_order,
                                           labels = pool_order)
@@ -310,8 +310,8 @@ prepare_heatmap_data <- function(data = NULL,
   colors_annotation <- list(
     "SampleType" = RColorBrewer::brewer.pal(name = "Set1",
                                             n = 9)[1:length(unique(data[, sampletype_col]))],
-    "Batch" = RColorBrewer::brewer.pal(name = "Set2",
-                                       n = 8)[1:length(unique(data[, batch_col]))]
+    "Batch" = RColorBrewer::brewer.pal(name = "Set3",
+                                       n = 12)[1:length(unique(data[, batch_col]))]
   )
   names(colors_annotation$SampleType) <- unique(data[, sampletype_col])
   names(colors_annotation$Batch) <- as.character(unique(data[, batch_col]))
@@ -475,7 +475,17 @@ prepare_hist_data <- function(data = NULL,
     tidyr::pivot_longer(cols = !tidyr::matches("featureNames"),
                         names_to = "Batch",
                         values_to = "rsd")
-  hist_data_batch$Batch <- factor(hist_data_batch$Batch)
+
+  u <- unique(hist_data_batch$Batch)
+  u_order <- u[order({
+    n <- suppressWarnings(as.numeric(u))
+    if (all(!is.na(n))) n else u
+  })]
+  hist_data_batch$Batch <- factor(
+    x = hist_data_batch$Batch,
+    levels = u_order,
+    labels = u_order
+  )
 
   res <- list(
     "overall" = hist_data_all,
